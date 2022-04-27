@@ -160,6 +160,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 			Environment environment, @Nullable ResourceLoader resourceLoader) {
 
 		Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
+		//也初始化BeanDefinitionRegistry，因为在scanner扫描类时也需要将生成的BeanDefinition对象注册到DefaultListableBeanFactory的BeanDefinitionMap中
 		this.registry = registry;
 
 		if (useDefaultFilters) {

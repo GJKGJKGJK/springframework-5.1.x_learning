@@ -72,6 +72,8 @@ public class AnnotatedBeanDefinitionReader {
 	}
 
 	/**
+	 * 给指定的环境和指定的注册表添加一个AnnotatedBeanDefinitionReader
+	 *
 	 * Create a new {@code AnnotatedBeanDefinitionReader} for the given registry,
 	 * using the given {@link Environment}.
 	 * @param registry the {@code BeanFactory} to load bean definitions into,
@@ -85,6 +87,11 @@ public class AnnotatedBeanDefinitionReader {
 		Assert.notNull(environment, "Environment must not be null");
 		this.registry = registry;
 		this.conditionEvaluator = new ConditionEvaluator(registry, environment, null);
+
+		//AnnotationConfigApplicationContext中创建读取器时，将本身作作为参数传入
+		//注册表BeanDefinitionRegistry = Spring容器的上下文AnnotationConfigApplicationContext
+		//AnnotatedBeanDefinitionReader读取的被注解标注的bean，是用BeanDefinitionRegistry注册表接收的
+		//再通过注册表注册到DefaultListableBeanFactory中的BeanDefinitionMap中的
 		AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry);
 	}
 

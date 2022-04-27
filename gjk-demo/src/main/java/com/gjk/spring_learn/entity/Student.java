@@ -1,4 +1,4 @@
-package com.gjk.spring_learn;
+package com.gjk.spring_learn.entity;
 
 /**
  * Student

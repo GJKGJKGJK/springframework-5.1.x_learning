@@ -59,11 +59,15 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 
 
 	/**
+	 * 初始化注解配置应用程序上下文容器
+	 *
 	 * Create a new AnnotationConfigApplicationContext that needs to be populated
 	 * through {@link #register} calls and then manually {@linkplain #refresh refreshed}.
 	 */
 	public AnnotationConfigApplicationContext() {
+		//初始化一个注解BeanDefinition读取器，用于读取被注解标注的bean，读取的信息存放到AnnotatedBeanDefinition
 		this.reader = new AnnotatedBeanDefinitionReader(this);
+		//初始化一个BeanDefinition扫描器,用于扫描@ComponentScan注解配置类或者包下的所有类，将被注解标注的bean生成对应的AnnotationBeanDefintion
 		this.scanner = new ClassPathBeanDefinitionScanner(this);
 	}
 
@@ -84,7 +88,9 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * {@link Configuration @Configuration} classes
 	 */
 	public AnnotationConfigApplicationContext(Class<?>... componentClasses) {
+		//先调用父类GenericApplicationContext的构造方法，调用无参构造方法，初始化注解配置应用程序上下文容器
 		this();
+		//注册传入的组件类
 		register(componentClasses);
 		refresh();
 	}

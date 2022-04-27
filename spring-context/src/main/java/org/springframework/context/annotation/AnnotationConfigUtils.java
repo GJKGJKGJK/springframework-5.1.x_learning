@@ -147,31 +147,36 @@ public abstract class AnnotationConfigUtils {
 	 */
 	public static Set<BeanDefinitionHolder> registerAnnotationConfigProcessors(
 			BeanDefinitionRegistry registry, @Nullable Object source) {
-
+		//获取上下文中的DefaultListableBeanFactory类
 		DefaultListableBeanFactory beanFactory = unwrapDefaultListableBeanFactory(registry);
+		//初始化beanFactory
 		if (beanFactory != null) {
 			if (!(beanFactory.getDependencyComparator() instanceof AnnotationAwareOrderComparator)) {
+				// 向beanFactory中添加AnnotationAwareOrderComparator注解比较器
 				beanFactory.setDependencyComparator(AnnotationAwareOrderComparator.INSTANCE);
 			}
 			if (!(beanFactory.getAutowireCandidateResolver() instanceof ContextAnnotationAutowireCandidateResolver)) {
+				// 向beanFactory中添加ContextAnnotationAutowireCandidateResolver注解解析器
 				beanFactory.setAutowireCandidateResolver(new ContextAnnotationAutowireCandidateResolver());
 			}
 		}
 
+		//下面是添加一些Spring自己定义的bean,以便后面初始化使用
 		Set<BeanDefinitionHolder> beanDefs = new LinkedHashSet<>(8);
-
+        //ConfigurationClassPostProcessor用于读取配置类
 		if (!registry.containsBeanDefinition(CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(ConfigurationClassPostProcessor.class);
 			def.setSource(source);
 			beanDefs.add(registerPostProcessor(registry, def, CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME));
 		}
-
+		//AutowiredAnnotationBeanPostProcessor用于处理依赖注入
 		if (!registry.containsBeanDefinition(AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(AutowiredAnnotationBeanPostProcessor.class);
 			def.setSource(source);
 			beanDefs.add(registerPostProcessor(registry, def, AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME));
 		}
 
+		//CommonAnnotationBeanPostProcessor 用于处理JSR-250定义的注解，即java定义的注解
 		// Check for JSR-250 support, and if present add the CommonAnnotationBeanPostProcessor.
 		if (jsr250Present && !registry.containsBeanDefinition(COMMON_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(CommonAnnotationBeanPostProcessor.class);
@@ -179,6 +184,7 @@ public abstract class AnnotationConfigUtils {
 			beanDefs.add(registerPostProcessor(registry, def, COMMON_ANNOTATION_PROCESSOR_BEAN_NAME));
 		}
 
+		//用于支持JPA
 		// Check for JPA support, and if present add the PersistenceAnnotationBeanPostProcessor.
 		if (jpaPresent && !registry.containsBeanDefinition(PERSISTENCE_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition();
@@ -223,6 +229,7 @@ public abstract class AnnotationConfigUtils {
 			return (DefaultListableBeanFactory) registry;
 		}
 		else if (registry instanceof GenericApplicationContext) {
+			//调用父类GenericApplicationContext构造方法中提供的DefaultListableBeanFactory
 			return ((GenericApplicationContext) registry).getDefaultListableBeanFactory();
 		}
 		else {
