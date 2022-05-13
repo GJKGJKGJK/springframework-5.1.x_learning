@@ -65,7 +65,8 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * through {@link #register} calls and then manually {@linkplain #refresh refreshed}.
 	 */
 	public AnnotationConfigApplicationContext() {
-		//初始化一个注解BeanDefinition读取器，用于读取被注解标注的bean，读取的信息存放到AnnotatedBeanDefinition
+		//初始化一个注解BeanDefinition读取器。
+		// 初始化时，会向BeanFactory中注册Spring定义的几个重要的PostProcessor后处理器，以及设置BeanFactory的排序器和自动注入解析器
 		this.reader = new AnnotatedBeanDefinitionReader(this);
 		//初始化一个BeanDefinition扫描器,用于扫描@ComponentScan注解配置类或者包下的所有类，将被注解标注的bean生成对应的AnnotationBeanDefintion
 		this.scanner = new ClassPathBeanDefinitionScanner(this);
@@ -88,10 +89,15 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	 * {@link Configuration @Configuration} classes
 	 */
 	public AnnotationConfigApplicationContext(Class<?>... componentClasses) {
-		//先调用父类GenericApplicationContext的构造方法，调用无参构造方法，初始化注解配置应用程序上下文容器
+		/**
+		 * 先调用父类GenericApplicationContext的构造方法，调用无参构造方法，初始化注解配置应用程序上下文容器
+		 *
+		 * 再调用AnnotationConfigApplicationContext的无参构造方法
+		 */
 		this();
-		//注册传入的组件类
+		//注册传入的class对象，可以是多个
 		register(componentClasses);
+		//Spring-IOC核心代码
 		refresh();
 	}
 
@@ -163,6 +169,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	@Override
 	public void register(Class<?>... componentClasses) {
 		Assert.notEmpty(componentClasses, "At least one component class must be specified");
+		//将注册功能委托给阅读器去处理
 		this.reader.register(componentClasses);
 	}
 

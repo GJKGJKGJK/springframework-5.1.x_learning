@@ -56,6 +56,15 @@ import java.lang.annotation.Target;
  * @since 4.0
  * @see Condition
  */
+
+
+/**
+ * 1、当@Conditional注解中有多个判断条件时，必须所有条件都满足（都返回true），该bean才会注入到IOC容器中。
+ *
+ * 2、如果@Conditional注解添加到了配置类上，那么当条件不满足时，类中配置的多个bean都不会注册到IOC容器中。
+ *
+ * 3、当@Conditional注解在类和方法上都存在时，会先验证类上的条件，然后在验证方法上的条件，这其中有一项不满足将不会把bean注册到IOC容器中。
+ */
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

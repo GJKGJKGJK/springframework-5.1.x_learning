@@ -1,9 +1,10 @@
-package com.gjk.spring_learn.test;
+package com.gjk.spring_learn.basis.test;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Conditional;
 
-import com.gjk.spring_learn.service.StudentServiceImpl;
+import com.gjk.spring_learn.basis.service.StudentServiceImpl;
 
 /**
  * RunTest
@@ -12,7 +13,7 @@ import com.gjk.spring_learn.service.StudentServiceImpl;
  * @date: 2022/4/27 10:16
  * @description:
  */
-@ComponentScan("com.gjk")
+@ComponentScan("com.gjk.spring_learn.basis")
 public class RunTest {
 
 	public static void main(String[] args) {

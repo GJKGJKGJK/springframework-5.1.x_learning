@@ -156,14 +156,18 @@ public abstract class AnnotationConfigUtils {
 				beanFactory.setDependencyComparator(AnnotationAwareOrderComparator.INSTANCE);
 			}
 			if (!(beanFactory.getAutowireCandidateResolver() instanceof ContextAnnotationAutowireCandidateResolver)) {
-				// 向beanFactory中添加ContextAnnotationAutowireCandidateResolver注解解析器
+				// 向beanFactory中添加ContextAnnotationAutowireCandidateResolver自动注入解析器
 				beanFactory.setAutowireCandidateResolver(new ContextAnnotationAutowireCandidateResolver());
 			}
 		}
 
 		//下面是添加一些Spring自己定义的bean,以便后面初始化使用
 		Set<BeanDefinitionHolder> beanDefs = new LinkedHashSet<>(8);
-        //ConfigurationClassPostProcessor用于读取配置类
+		/**
+		 * 	ConfigurationClassPostProcessor，实现BeanDefinitionRegistryPostProcessor接口。
+		 * 	因此在invokeBeanFactoryPostProcessors方法内，会进行回调postProcessBeanDefinitionRegistry方法和postProcessBeanFactory方法
+		 * 	用于处理@Configuration注解及派生注解的类，同时处理内部类
+		 */
 		if (!registry.containsBeanDefinition(CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(ConfigurationClassPostProcessor.class);
 			def.setSource(source);
@@ -242,6 +246,7 @@ public abstract class AnnotationConfigUtils {
 	}
 
 	static void processCommonDefinitionAnnotations(AnnotatedBeanDefinition abd, AnnotatedTypeMetadata metadata) {
+		//从元数据中获取@Lazy注解值，，设置到BeanDefinition中
 		AnnotationAttributes lazy = attributesFor(metadata, Lazy.class);
 		if (lazy != null) {
 			abd.setLazyInit(lazy.getBoolean("value"));
@@ -252,19 +257,24 @@ public abstract class AnnotationConfigUtils {
 				abd.setLazyInit(lazy.getBoolean("value"));
 			}
 		}
-
+        //从元数据中获取@Primary注解值，，设置到BeanDefinition中
 		if (metadata.isAnnotated(Primary.class.getName())) {
 			abd.setPrimary(true);
 		}
+
+		//从元数据中获取@DependsOn注解值，，设置到BeanDefinition中
 		AnnotationAttributes dependsOn = attributesFor(metadata, DependsOn.class);
 		if (dependsOn != null) {
 			abd.setDependsOn(dependsOn.getStringArray("value"));
 		}
 
+		//从元数据中获取@Role注解值，，设置到BeanDefinition中
 		AnnotationAttributes role = attributesFor(metadata, Role.class);
 		if (role != null) {
 			abd.setRole(role.getNumber("value").intValue());
 		}
+
+		//从元数据中获取@Description注解值，，设置到BeanDefinition中
 		AnnotationAttributes description = attributesFor(metadata, Description.class);
 		if (description != null) {
 			abd.setDescription(description.getString("value"));
@@ -273,12 +283,14 @@ public abstract class AnnotationConfigUtils {
 
 	static BeanDefinitionHolder applyScopedProxyMode(
 			ScopeMetadata metadata, BeanDefinitionHolder definition, BeanDefinitionRegistry registry) {
-
+		//获取元数据中的代理模式作用域，即用什么方式代理
 		ScopedProxyMode scopedProxyMode = metadata.getScopedProxyMode();
 		if (scopedProxyMode.equals(ScopedProxyMode.NO)) {
 			return definition;
 		}
+		//判断是否用cglib代理
 		boolean proxyTargetClass = scopedProxyMode.equals(ScopedProxyMode.TARGET_CLASS);
+		//创建代理对象的BeanDefinitionHolder
 		return ScopedProxyCreator.createScopedProxy(definition, registry, proxyTargetClass);
 	}
 

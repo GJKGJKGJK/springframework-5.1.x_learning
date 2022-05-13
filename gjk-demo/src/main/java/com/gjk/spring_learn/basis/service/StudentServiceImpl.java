@@ -1,9 +1,9 @@
-package com.gjk.spring_learn.service;
+package com.gjk.spring_learn.basis.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.gjk.spring_learn.dao.StudentDaoImpl;
+import com.gjk.spring_learn.basis.dao.StudentDaoImpl;
 
 /**
  * StudentServiceImpl

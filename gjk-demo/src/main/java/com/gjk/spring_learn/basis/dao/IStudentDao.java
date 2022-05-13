@@ -1,4 +1,4 @@
-package com.gjk.spring_learn.dao;
+package com.gjk.spring_learn.basis.dao;
 
 /**
  * IStudentDao
