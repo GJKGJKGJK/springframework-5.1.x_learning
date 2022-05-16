@@ -19,6 +19,14 @@ package org.springframework.beans.factory.config;
 import org.springframework.beans.BeansException;
 
 /**
+ * BeanFactoryPostProcessor 是Spring框架提供的扩展点之一
+ *
+ * 实现该接口，可以在任何其他bean实例化之前读取BeanDefinition,并修改beanDefinition的属性，eg:修改bean的scope
+ *
+ * 可以同时配置多个BeanFactoryPostProcessor,并通过实现Ordered接口控制各个BeanFactoryPostProcessor执行顺序
+ *
+ *
+ *
  * Allows for custom modification of an application context's bean definitions,
  * adapting the bean property values of the context's underlying bean factory.
  *

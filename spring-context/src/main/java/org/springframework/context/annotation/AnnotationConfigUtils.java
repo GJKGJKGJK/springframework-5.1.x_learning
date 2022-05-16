@@ -161,7 +161,7 @@ public abstract class AnnotationConfigUtils {
 			}
 		}
 
-		//下面是添加并注册一些Spring自己定义的bean,以便后面初始化使用
+		//下面是添加并注册一些Spring自己定义的bean,以便后面在refresh()方法中的invokeBeanFactoryPostProcessors()方法中使用
 		Set<BeanDefinitionHolder> beanDefs = new LinkedHashSet<>(8);
 		/**
 		 * 	ConfigurationClassPostProcessor，实现BeanDefinitionRegistryPostProcessor接口。

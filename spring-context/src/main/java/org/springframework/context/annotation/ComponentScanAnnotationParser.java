@@ -129,6 +129,13 @@ class ComponentScanAnnotationParser {
 				return declaringClass.equals(className);
 			}
 		});
+		/**
+		 * 上面都是根据注解属性值给扫描器设置一些基本信息
+		 *
+		 * basePackages可能是多个扫描目录
+		 *
+		 * 返回所有扫描目录下bean，转成beanDefinition
+		 */
 		return scanner.doScan(StringUtils.toStringArray(basePackages));
 	}
 

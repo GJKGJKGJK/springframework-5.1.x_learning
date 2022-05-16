@@ -60,6 +60,7 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
@@ -271,7 +272,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			 * 全注解：@Configuration注解；
 			 * 部分注解：@Component、@Import、@ImportResource、@ComponentScan、@Bean注解
 			 *
-			 * 正常Spring流程下，都没有标注，开发可以利用Spring扩展修改配置类对应的标识
+			 * 正常Spring流程下都没有标注,会走到下面的else if中
 			 */
 			if (ConfigurationClassUtils.isFullConfigurationClass(beanDef) ||
 					ConfigurationClassUtils.isLiteConfigurationClass(beanDef)) {
@@ -279,7 +280,15 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 					logger.debug("Bean definition has already been processed as a configuration class: " + beanDef);
 				}
 			}
-			//检查BeanDefinition是否是配置类，并且添加全注解、部分注解的标记
+
+			/**
+			 * 检查BeanDefinition是否是配置类，并且添加全注解、部分注解的标记
+			 * @Configuration(全注解)
+			 * @Component、@ComponentScan、@Import、@ImportResource（部分注解）
+			 *
+			 *如果是，则将BeanDefinition放入集合中
+			 */
+
 			else if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDef, this.metadataReaderFactory)) {
 				//添加到configCandidates集合中
 				configCandidates.add(new BeanDefinitionHolder(beanDef, beanName));
@@ -318,7 +327,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		}
 
 		// Parse each @Configuration class
-		//创建配置类解析器
+		/**
+		 * 创建配置类解析器，开始解析我们作为参数传入的.class对象
+		 */
 		ConfigurationClassParser parser = new ConfigurationClassParser(
 				this.metadataReaderFactory, this.problemReporter, this.environment,
 				this.resourceLoader, this.componentScanBeanNameGenerator, registry);
@@ -326,7 +337,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		Set<BeanDefinitionHolder> candidates = new LinkedHashSet<>(configCandidates);
 		Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
 		do {
-			//开始解析我们定义在Context传入的.class对象
+			/**
+			 * 开始解析我们定义在Context传入的.class对象，即开始扫描包
+			 */
 			parser.parse(candidates);
 			parser.validate();
 

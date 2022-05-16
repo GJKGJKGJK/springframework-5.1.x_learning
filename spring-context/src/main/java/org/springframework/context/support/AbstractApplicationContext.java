@@ -549,6 +549,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				 *
 				 * 我们常用的AnnotationConfigApplicationContext和ClassPathXmlApplicationContext都没有重写AbstarctApplicationContext的postProcessBeanFactory方法
 				 *
+				 * 此处钩子方法没有实现，可能后续版本会补充
+				 *
 				 * 到这一步，Spring内部bean都已经加载完成，但是还没初始化
 				 */
 				postProcessBeanFactory(beanFactory);
@@ -773,7 +775,14 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * <p>Must be called before singleton instantiation.
 	 */
 	protected void invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory beanFactory) {
-		//getBeanFactoryPostProcessors()  获取上下文中BeanFactoryPostProcess集合
+		/**
+		 * getBeanFactoryPostProcessors() 一般情况下都是null
+		 *
+		 * 注意哦！！！ 获取的BeanFactoryPostProcessor是用户自定义，且没有使用@Component注解交由容器管理的的BeanFactoryPostProcessor、
+		 *
+		 * 用户可以在refresh()方法执行之前，通过上下文的addBeanFactoryPostProcessor()方法添加自定义的BeanFactoryPostProcessor实现类
+		 *
+		 */
 		PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, getBeanFactoryPostProcessors());
 
 		// Detect a LoadTimeWeaver and prepare for weaving, if found in the meantime

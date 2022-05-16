@@ -63,13 +63,10 @@ final class PostProcessorRegistrationDelegate {
 			BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 
 			/**
-			 * 此块代码处理的是上下文中的BeanFactoryPostProcessors集合
+			 * 此块代码处理的是用户自定义，且没有交由spring托管的BeanFactoryPostProcessor实现类，或者BeanFactoryRegistryPostProcessor实现类
 			 *
-			 * 分别创建BeanFactoryPostProcessor集合和BeanDefinitionRegistryPostProcessor集合，放置各自接口实现类
+			 * BeanFactoryPostProcessor 是 BeanFactoryRegistryPostProcessor的父接口，定义两个集合分别存放各自实现类
 			 *
-			 * BeanDefinitionRegistryPostProcessor接口是BeanFactoryPostProcessor接口的子接口
-			 *
-			 * 此段是遍历上下文中beanFactoryPostProcessors集合，将BeanDefinitionRegistryPostProcessor接口实现类和BeanFactoryPostPorcessor接口实现类区分开，
 			 * 且优先调用BeanDefinitionRegistryPostProcessor接口的postProcessorBeanDefinitionRegistry方法
 			 */
 			List<BeanFactoryPostProcessor> regularPostProcessors = new ArrayList<>();
@@ -91,12 +88,14 @@ final class PostProcessorRegistrationDelegate {
 			// uninitialized to let the bean factory post-processors apply to them!
 			// Separate between BeanDefinitionRegistryPostProcessors that implement
 			// PriorityOrdered, Ordered, and the rest.
-			//这个集合用来存从配置文件或注解中扫描出来的实现了 BeanDefinitionRegistryPostProcessor 这个接口的集合
+			//这个集合用来存放spring内部的BeanDefinitionRegistryPostProcessor接口实现类，
 			List<BeanDefinitionRegistryPostProcessor> currentRegistryProcessors = new ArrayList<>();
 
 			// First, invoke the BeanDefinitionRegistryPostProcessors that implement PriorityOrdered.
 			/**
-			 * 先从BeanFactory中获取的所有的实现BeanDefinitionRegistryPostProcessor接口的实现类
+			 * 先从BeanFactory中获取的所有的实现BeanDefinitionRegistryPostProcessor接口实现类的BeanDefinition
+			 *
+			 * 目前只有一个实现类ConfigurationClassPostProcessor，用户定义的且交由Spring托管的BeanDefinitionRegistryPostProcessor接口实现类还没加载进容器
 			 *
 			 * 此块代码优先处理实现PriorityOrdered接口的bean，初始化这些bean并存入currentRegistryProcessors集合中
 			 *
@@ -116,9 +115,9 @@ final class PostProcessorRegistrationDelegate {
 			}
 			//对集合按照DefaultListableBeanFactory中的dependencyComparator排序规则进行排序
 			sortPostProcessors(currentRegistryProcessors, beanFactory);
-			//将spring定义的BeanDefinitionRegistryPostProcessor接口实现类和用户定义的BeanDefinitioanRegistryPostProcessor接口实现类合并，集中处理
+			//将spring定义的和用户定义的BeanDefinitioanRegistryPostProcessor接口实现类合并，集中处理
 			registryProcessors.addAll(currentRegistryProcessors);
-			//调用用户定义的BeanDefinitionRegistryPostProcessor接口实现类的postProcessorBeanDefinitionRegistry方法
+			//循环调用各个BeanDefinitionRegistryPostProcessor接口实现类的postProcessorBeanDefinitionRegistry方法
 			invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry);
 			//已经将currentRegistryProcessors集合加入到总的registryProcessors集合总，此时清空，给下面继续使用
 			currentRegistryProcessors.clear();
