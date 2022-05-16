@@ -17,9 +17,31 @@
 package org.springframework.beans.factory.config;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor;
 import org.springframework.lang.Nullable;
 
 /**
+ *
+ * BeanPostProcessor 是Spring框架提供的扩展点之一
+ *
+ * 通过实现BeanPostProcessor接口，开发人员就可以插手bean的实例化过程，从而减轻beanFactory的负担。
+ * 比如AOP就是通过BeanPostProcessor和IOC建立起联系，在bean实例化后期将切面逻辑织入bean实例中的
+ *
+ * BeanFactory中的beanPostProcessors列表就是用来存放加载此接口的实现类，多个实现类我们可以通过实现PriorityOrder接口控制执行顺序
+ * BeanPostProcessor接口有很多实现类，需要重点关注：
+ * @see org.springframework.context.support.ApplicationContextAwareProcessor
+ * @see InitDestroyAnnotationBeanPostProcessor
+ * @see InstantiationAwareBeanPostProcessor
+ * @see org.springframework.context.annotation.CommonAnnotationBeanPostProcessor
+ * @see org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
+ * @see org.springframework.beans.factory.annotation.RequiredAnnotationBeanPostProcessor
+ * @see org.springframework.validation.beanvalidation.BeanValidationPostProcessor
+ * @see org.springframework.aop.framework.autoproxy.AbstractAutoProxyCreator
+ *
+ *
+ *
+ *
+
  * Factory hook that allows for custom modification of new bean instances,
  * e.g. checking for marker interfaces or wrapping them with proxies.
  *

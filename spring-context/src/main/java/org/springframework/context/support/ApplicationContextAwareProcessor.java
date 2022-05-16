@@ -93,6 +93,7 @@ class ApplicationContextAwareProcessor implements BeanPostProcessor {
 			}, acc);
 		}
 		else {
+			//处理实现Aware相关接口的实现类
 			invokeAwareInterfaces(bean);
 		}
 

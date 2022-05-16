@@ -161,7 +161,7 @@ public abstract class AnnotationConfigUtils {
 			}
 		}
 
-		//下面是添加一些Spring自己定义的bean,以便后面初始化使用
+		//下面是添加并注册一些Spring自己定义的bean,以便后面初始化使用
 		Set<BeanDefinitionHolder> beanDefs = new LinkedHashSet<>(8);
 		/**
 		 * 	ConfigurationClassPostProcessor，实现BeanDefinitionRegistryPostProcessor接口。
@@ -173,14 +173,22 @@ public abstract class AnnotationConfigUtils {
 			def.setSource(source);
 			beanDefs.add(registerPostProcessor(registry, def, CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME));
 		}
-		//AutowiredAnnotationBeanPostProcessor用于处理依赖注入
+		/**
+		 * 注册AutowiredAnnotationBeanPostProcessor
+		 * 用于处理依赖注入
+		 */
+
 		if (!registry.containsBeanDefinition(AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(AutowiredAnnotationBeanPostProcessor.class);
 			def.setSource(source);
 			beanDefs.add(registerPostProcessor(registry, def, AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME));
 		}
 
-		//CommonAnnotationBeanPostProcessor 用于处理JSR-250定义的注解，即java定义的注解
+		/**
+		 * 注册CommonAnnotationBeanPostProcessor
+		 * 用于处理JSR-250定义的注解，即java定义的注解
+		 */
+
 		// Check for JSR-250 support, and if present add the CommonAnnotationBeanPostProcessor.
 		if (jsr250Present && !registry.containsBeanDefinition(COMMON_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(CommonAnnotationBeanPostProcessor.class);
@@ -188,7 +196,9 @@ public abstract class AnnotationConfigUtils {
 			beanDefs.add(registerPostProcessor(registry, def, COMMON_ANNOTATION_PROCESSOR_BEAN_NAME));
 		}
 
-		//用于支持JPA
+		/**
+		 * 注册jpa相关类
+		 */
 		// Check for JPA support, and if present add the PersistenceAnnotationBeanPostProcessor.
 		if (jpaPresent && !registry.containsBeanDefinition(PERSISTENCE_ANNOTATION_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition();
@@ -204,12 +214,18 @@ public abstract class AnnotationConfigUtils {
 			beanDefs.add(registerPostProcessor(registry, def, PERSISTENCE_ANNOTATION_PROCESSOR_BEAN_NAME));
 		}
 
+		/**
+		 * 注册EventListenerMethodProcessor
+		 */
 		if (!registry.containsBeanDefinition(EVENT_LISTENER_PROCESSOR_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(EventListenerMethodProcessor.class);
 			def.setSource(source);
 			beanDefs.add(registerPostProcessor(registry, def, EVENT_LISTENER_PROCESSOR_BEAN_NAME));
 		}
 
+		/**
+		 * 注册DefaultEventListenerFactory
+		 */
 		if (!registry.containsBeanDefinition(EVENT_LISTENER_FACTORY_BEAN_NAME)) {
 			RootBeanDefinition def = new RootBeanDefinition(DefaultEventListenerFactory.class);
 			def.setSource(source);

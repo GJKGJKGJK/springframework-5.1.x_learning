@@ -549,7 +549,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				 *
 				 * 我们常用的AnnotationConfigApplicationContext和ClassPathXmlApplicationContext都没有重写AbstarctApplicationContext的postProcessBeanFactory方法
 				 *
-				 * 到这一步，所有需要加载、注册的bean都已完成，但都没有开始初始化过程！！！
+				 * 到这一步，Spring内部bean都已经加载完成，但是还没初始化
 				 */
 				postProcessBeanFactory(beanFactory);
 
@@ -560,6 +560,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				 * 注意！！！
 				 * 重点关注！！！
 				 * 在AnnotationConfigApplicationContext中，有一个特殊的后置处理器ConfigurationClassPostProcessor,在此处实例化并执行！！！
+				 * ConfigurationClassPostProcessor后置处理器用于加载用户定义的bean
 				 */
 				invokeBeanFactoryPostProcessors(beanFactory);
 
@@ -695,15 +696,19 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		// Tell the internal bean factory to use the context's class loader etc.
 		//将上下文使用的类加载器设置到BeanFactory中
 		beanFactory.setBeanClassLoader(getClassLoader());
-        //设置表达式解析策略
+        //设置bean表达式解析器
 		beanFactory.setBeanExpressionResolver(new StandardBeanExpressionResolver(beanFactory.getBeanClassLoader()));
 		//设置属性编辑器
 		beanFactory.addPropertyEditorRegistrar(new ResourceEditorRegistrar(this, getEnvironment()));
 
 		// Configure the bean factory with context callbacks.
-		// 添加一个BeanPostProcessor回调，实现Aware接口的Bean在初始化的时候，这个Processor负责回调
+		/**
+		 * 添加一个BeanPostProcessor实现类ApplicationContextAwareProcessor
+		 * EnvironmentAware、EmbeddedValueResolverAware等接口的实现类Bean在初始化前，会回调这个Processor的postProcessBeforeInitialization方法
+		 * postProcessBeforeInitialization方法主要给Bean设置一些属性值
+ 		 */
 		beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
-		//下面几行的意思是，这些接口的实现类，在自动装配的时候会被忽略，Spring会通过其他方式来处理这些依赖
+		//可能
 		beanFactory.ignoreDependencyInterface(EnvironmentAware.class);
 		beanFactory.ignoreDependencyInterface(EmbeddedValueResolverAware.class);
 		beanFactory.ignoreDependencyInterface(ResourceLoaderAware.class);
@@ -714,9 +719,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		// BeanFactory interface not registered as resolvable type in a plain factory.
 		// MessageSource registered (and found for autowiring) as a bean.
 		/**
-		 * 为持有以下属性的Bean,注入当前容器或者容器的BeanFactory
-		 * 因为ApplicationContext 实现了ResourceLoader、ApplicationEventPublisher，
-		 * 如果有bean依赖下面的接口，则会将ApplicationContext注入
+		 *
 		 */
 		beanFactory.registerResolvableDependency(BeanFactory.class, beanFactory);
 		beanFactory.registerResolvableDependency(ResourceLoader.class, this);

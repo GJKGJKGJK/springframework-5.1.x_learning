@@ -92,7 +92,7 @@ public class AnnotatedBeanDefinitionReader {
 		/**
 		 * AnnotationConfigApplicationContext中创建读取器时，将本身作作为参数传入
 		 * 注册表BeanDefinitionRegistry = Spring容器的上下文AnnotationConfigApplicationContext
-		 * 向上下文的BeanFactory中注册ConfigurationClassPostProcessor、AutoWritedAnnotationPostProcessor等后处理器
+		 * 向上下文的BeanFactory中注册ConfigurationClassPostProcessor、AutoWritedAnnotationPostProcessor等spring定义的BeanDefinition
 		 *   以及设置BeanFactory中的排序器和自动注入解析器
 		 */
 		AnnotationConfigUtils.registerAnnotationConfigProcessors(this.registry);
@@ -229,7 +229,7 @@ public class AnnotatedBeanDefinitionReader {
 		AnnotatedGenericBeanDefinition abd = new AnnotatedGenericBeanDefinition(beanClass);
 		/**
 		 * 	abd.getMetadata() 从beanDefinition中获取元数据，元数据包括注解信息、是否内部类、类Class基本信息
-		 * 	处理标注@Conditional的注解，如果没有标注，直接返回false
+		 * 	处理标注@Conditional的注解，如果没有标注，直接返回false跳过
 		 */
 		if (this.conditionEvaluator.shouldSkip(abd.getMetadata())) {
 			return;

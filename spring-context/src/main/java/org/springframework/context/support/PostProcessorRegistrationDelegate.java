@@ -69,7 +69,7 @@ final class PostProcessorRegistrationDelegate {
 			 *
 			 * BeanDefinitionRegistryPostProcessor接口是BeanFactoryPostProcessor接口的子接口
 			 *
-			 * 此段是遍历上下文中beanFactoryPostProcessors集合，将BeanDefinitionRegistryPostProcessor接口实现类和BeanDefinitioanPostPorcessor接口实现类区分开，
+			 * 此段是遍历上下文中beanFactoryPostProcessors集合，将BeanDefinitionRegistryPostProcessor接口实现类和BeanFactoryPostPorcessor接口实现类区分开，
 			 * 且优先调用BeanDefinitionRegistryPostProcessor接口的postProcessorBeanDefinitionRegistry方法
 			 */
 			List<BeanFactoryPostProcessor> regularPostProcessors = new ArrayList<>();
