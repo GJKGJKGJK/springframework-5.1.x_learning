@@ -4,6 +4,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Conditional;
 
+import com.gjk.spring_learn.basis.aware.MyApplicationContext;
 import com.gjk.spring_learn.basis.service.StudentServiceImpl;
 
 /**
@@ -20,6 +21,8 @@ public class RunTest {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(RunTest.class);
 		StudentServiceImpl studentServiceImpl = (StudentServiceImpl) context.getBean("studentServiceImpl");
 		studentServiceImpl.goSchool();
+		StudentServiceImpl studentServiceImpl1 = (StudentServiceImpl) MyApplicationContext.getBean("studentServiceImpl");
+		studentServiceImpl1.goSchool();
 
 	}
 }

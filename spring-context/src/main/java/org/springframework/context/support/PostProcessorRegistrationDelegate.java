@@ -98,7 +98,7 @@ final class PostProcessorRegistrationDelegate {
 			/**
 			 * 先从BeanFactory中获取的所有的实现BeanDefinitionRegistryPostProcessor接口的实现类
 			 *
-			 * 此块代码处理实现PriorityOrdered接口的bean，实例化这些bean并存入currentRegistryProcessors集合中
+			 * 此块代码优先处理实现PriorityOrdered接口的bean，初始化这些bean并存入currentRegistryProcessors集合中
 			 *
 			 * PriorityOrdered接口对Ordered接口的扩展，表达了优先级排序，实现此接口的对象排序总是普通有序对象之前
 			 *
