@@ -108,7 +108,7 @@ class ComponentScanAnnotationParser {
 		if (lazyInit) {
 			scanner.getBeanDefinitionDefaults().setLazyInit(true);
 		}
-
+        //获取扫描路径，可能是多个值
 		Set<String> basePackages = new LinkedHashSet<>();
 		String[] basePackagesArray = componentScan.getStringArray("basePackages");
 		for (String pkg : basePackagesArray) {

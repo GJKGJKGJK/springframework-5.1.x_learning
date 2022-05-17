@@ -2,6 +2,7 @@ package com.gjk.spring_learn.invokeBeanFactoryPostProcessor.postprocessor;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.stereotype.Component;
 
 /**
  * ImportEuBeanFactoryProcessor
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
  * @date: 2022/5/7 17:43
  * @description:
  */
+@Component
 public class ImportEuBeanFactoryProcessor implements BeanPostProcessor {
 
 	@Override

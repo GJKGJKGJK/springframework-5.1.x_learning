@@ -1,31 +1,28 @@
-package com.gjk.spring_learn.basis.factory;
+package com.gjk.spring_learn.basis.beanFactoryPostProcessors;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
 
 /**
- * MyBeanFactoryPostProcessor
+ * MyBeanFactoryPostProcessor2
  *
  * @author: GJK
- * @date: 2022/5/16 22:00
+ * @date: 2022/5/16 22:43
  * @description:
  */
-@Component
-public class MyBeanFactoryPostProcessor1 implements BeanFactoryPostProcessor, Ordered {
+public class MyBeanFactoryPostProcessor2 implements BeanFactoryPostProcessor, Ordered {
 	@Override
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-		System.out.println("=========MyBeanFactoryPostProcessor1==========");
+		System.out.println("=========MyBeanFactoryPostProcessor2==========");
 		BeanDefinition studentServiceImpl = beanFactory.getBeanDefinition("studentServiceImpl");
-		studentServiceImpl.setScope("prototype");
+		studentServiceImpl.setScope("single");
 	}
 
 	@Override
 	public int getOrder() {
-		return 100;
+		return 200;
 	}
 }

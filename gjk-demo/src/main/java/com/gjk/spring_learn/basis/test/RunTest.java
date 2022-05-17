@@ -2,11 +2,9 @@ package com.gjk.spring_learn.basis.test;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Conditional;
 
-import com.gjk.spring_learn.basis.aware.MyApplicationContext;
-import com.gjk.spring_learn.basis.factory.MyBeanFactoryPostProcessor2;
-import com.gjk.spring_learn.basis.factory.MyBeanFactoryPostProcessor3;
+import com.gjk.spring_learn.basis.beanFactoryPostProcessors.MyBeanFactoryPostProcessor2;
+import com.gjk.spring_learn.basis.beanFactoryPostProcessors.MyBeanFactoryPostProcessor3;
 import com.gjk.spring_learn.basis.service.StudentServiceImpl;
 
 /**

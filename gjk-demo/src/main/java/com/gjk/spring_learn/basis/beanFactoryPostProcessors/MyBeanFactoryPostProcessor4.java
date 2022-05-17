@@ -1,4 +1,4 @@
-package com.gjk.spring_learn.basis.factory;
+package com.gjk.spring_learn.basis.beanFactoryPostProcessors;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;

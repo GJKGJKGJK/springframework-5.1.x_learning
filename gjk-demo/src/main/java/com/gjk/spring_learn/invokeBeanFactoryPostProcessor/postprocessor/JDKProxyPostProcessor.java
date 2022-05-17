@@ -2,6 +2,7 @@ package com.gjk.spring_learn.invokeBeanFactoryPostProcessor.postprocessor;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.stereotype.Component;
 
 import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.proxy.MyInvocationHandler;
 import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.proxy.ProxyUtil;
@@ -16,6 +17,7 @@ import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.service.impl.UserServ
  * @date: 2022/5/7 17:36
  * @description:
  */
+@Component
 public class JDKProxyPostProcessor implements BeanPostProcessor {
 
 	@Override
