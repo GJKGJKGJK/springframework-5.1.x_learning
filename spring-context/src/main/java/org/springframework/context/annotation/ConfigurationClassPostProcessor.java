@@ -282,7 +282,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			}
 
 			/**
-			 * 检查BeanDefinition是否是配置类，并且添加全注解、部分注解的标记
+			 * 检查BeanDefinition是否是注解类，并且添加全注解、部分注解的标记
 			 * @Configuration(全注解)
 			 * @Component、@ComponentScan、@Import、@ImportResource（部分注解）
 			 *
@@ -328,17 +328,21 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 		// Parse each @Configuration class
 		/**
+		 * 包扫描的核心解析器
 		 * 创建配置类解析器，开始解析我们作为参数传入的.class对象
+		 * 此处可以发现new这个解析器时，并没有传递ConfigurationClasses参数，
 		 */
 		ConfigurationClassParser parser = new ConfigurationClassParser(
 				this.metadataReaderFactory, this.problemReporter, this.environment,
 				this.resourceLoader, this.componentScanBeanNameGenerator, registry);
 
-		//进行去重了
+		//需要解析的配置类，一般是带有@ComponentScan注解的类
 		Set<BeanDefinitionHolder> candidates = new LinkedHashSet<>(configCandidates);
+		//用于存放已经解析注册到BeanDefinitionMap中的bean
 		Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
 		do {
 			/**
+			 * AnnotationConfigApplicationContext包扫描的核心代码
 			 * 循环解析去重后的配置类集合candidates，即我们作为参数传入的.class对象
 			 */
 			parser.parse(candidates);
@@ -362,8 +366,10 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			 * 此时@Component注解的类，@Configuration的类全部注册完成
 			 */
 			this.reader.loadBeanDefinitions(configClasses);
+			//添加到已注册集合中
 			alreadyParsed.addAll(configClasses);
 
+			//清空需要解析的配置类集合
 			candidates.clear();
 			if (registry.getBeanDefinitionCount() > candidateNames.length) {
 				String[] newCandidateNames = registry.getBeanDefinitionNames();

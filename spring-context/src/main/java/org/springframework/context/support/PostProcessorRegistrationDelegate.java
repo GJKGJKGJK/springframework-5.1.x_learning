@@ -95,15 +95,11 @@ final class PostProcessorRegistrationDelegate {
 			/**
 			 * 先从BeanFactory中获取的所有的实现BeanDefinitionRegistryPostProcessor接口实现类的BeanDefinition
 			 *
-			 * 目前只有一个实现类ConfigurationClassPostProcessor，用户定义的且交由Spring托管的BeanDefinitionRegistryPostProcessor接口实现类还没加载进容器
+			 * 目前只有一个实现类ConfigurationClassPostProcessor，而用户定义的且交由Spring托管的BeanDefinitionRegistryPostProcessor接口实现类还没加载进容器
 			 *
 			 * 此块代码优先处理实现PriorityOrdered接口的bean，初始化这些bean并存入currentRegistryProcessors集合中
 			 *
 			 * PriorityOrdered接口对Ordered接口的扩展，表达了优先级排序，实现此接口的对象排序总是普通有序对象之前
-			 *
-			 * 注意！！！ 重点关注！！！
-			 * 特殊后置处理器ConfigurationClassPostProcessor类,实现BeanDefinitionRegistryPostProcessor接口的主要作用如下：
-			 *    1、
 			 */
 			String[] postProcessorNames =
 					beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
@@ -336,6 +332,7 @@ final class PostProcessorRegistrationDelegate {
 	private static void invokeBeanDefinitionRegistryPostProcessors(
 			Collection<? extends BeanDefinitionRegistryPostProcessor> postProcessors, BeanDefinitionRegistry registry) {
 
+		//此时只有一条数据 ConfigurationClassPostProcessor
 		for (BeanDefinitionRegistryPostProcessor postProcessor : postProcessors) {
 			postProcessor.postProcessBeanDefinitionRegistry(registry);
 		}

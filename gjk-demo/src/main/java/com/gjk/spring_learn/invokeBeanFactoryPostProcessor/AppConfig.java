@@ -28,18 +28,18 @@ public class AppConfig {
 		return new TestBeanInAppConfig();
 	}
 
-	@Component
-	class ProcessMemberClasses1{
-
-	}
-
-	@Configuration
-	class ProcessMemberClasses2{
-
-	}
-
-
-	class ProcessMemberClasses3{
-
-	}
+//	@Component
+//	class ProcessMemberClasses1{
+//
+//	}
+//
+//	@Configuration
+//	class ProcessMemberClasses2{
+//
+//	}
+//
+//
+//	class ProcessMemberClasses3{
+//
+//	}
 }

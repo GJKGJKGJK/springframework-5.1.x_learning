@@ -74,14 +74,23 @@ class ComponentScanAnnotationParser {
 
 
 	public Set<BeanDefinitionHolder> parse(AnnotationAttributes componentScan, final String declaringClass) {
+		/**
+		 * new一个BeanDefinitionScanner扫描器
+		 */
 		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(this.registry,
 				componentScan.getBoolean("useDefaultFilters"), this.environment, this.resourceLoader);
 
+		/**
+		 * 根据@ComponentScan注解的属性值，给扫描器设置BeanName生成器
+		 */
 		Class<? extends BeanNameGenerator> generatorClass = componentScan.getClass("nameGenerator");
 		boolean useInheritedGenerator = (BeanNameGenerator.class == generatorClass);
 		scanner.setBeanNameGenerator(useInheritedGenerator ? this.beanNameGenerator :
 				BeanUtils.instantiateClass(generatorClass));
 
+		/**
+		 * 根据@ComponentScan注解的属性值，给扫描器设置作用域
+		 */
 		ScopedProxyMode scopedProxyMode = componentScan.getEnum("scopedProxy");
 		if (scopedProxyMode != ScopedProxyMode.DEFAULT) {
 			scanner.setScopedProxyMode(scopedProxyMode);
@@ -91,8 +100,14 @@ class ComponentScanAnnotationParser {
 			scanner.setScopeMetadataResolver(BeanUtils.instantiateClass(resolverClass));
 		}
 
+		/**
+		 * 根据@ComponentScan注解的属性值，给扫描器设置属性，这个不知道干啥用的，后面了解洗一下
+		 */
 		scanner.setResourcePattern(componentScan.getString("resourcePattern"));
 
+		/**
+		 * 根据@ComponentScan注解的属性值，分别给扫描器设置包含和不包含的扫描范围
+		 */
 		for (AnnotationAttributes filter : componentScan.getAnnotationArray("includeFilters")) {
 			for (TypeFilter typeFilter : typeFiltersFor(filter)) {
 				scanner.addIncludeFilter(typeFilter);
@@ -104,11 +119,16 @@ class ComponentScanAnnotationParser {
 			}
 		}
 
+		/**
+		 * 根据@ComponentScan注解的属性值，给扫描器设置BeanDefinition是否懒加载
+		 */
 		boolean lazyInit = componentScan.getBoolean("lazyInit");
 		if (lazyInit) {
 			scanner.getBeanDefinitionDefaults().setLazyInit(true);
 		}
-        //获取扫描路径，可能是多个值
+		/**
+		 * 根据@ComponentScan注解的属性值，获取扫描范围
+		 */
 		Set<String> basePackages = new LinkedHashSet<>();
 		String[] basePackagesArray = componentScan.getStringArray("basePackages");
 		for (String pkg : basePackagesArray) {
@@ -131,10 +151,9 @@ class ComponentScanAnnotationParser {
 		});
 		/**
 		 * 上面都是根据注解属性值给扫描器设置一些基本信息
+		 * 下面才是真正的通过扫描器进行包扫描，
 		 *
-		 * basePackages可能是多个扫描目录
-		 *
-		 * 返回所有扫描目录下bean，转成beanDefinition
+		 * 返回所有扫描目录下bean，转成beanDefinition并通过BeanDefinitionReader读取器注册到beanFactory
 		 */
 		return scanner.doScan(StringUtils.toStringArray(basePackages));
 	}

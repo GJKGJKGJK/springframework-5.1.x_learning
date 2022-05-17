@@ -17,7 +17,6 @@ import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.service.impl.UserServ
  * @date: 2022/5/7 17:36
  * @description:
  */
-@Component
 public class JDKProxyPostProcessor implements BeanPostProcessor {
 
 	@Override

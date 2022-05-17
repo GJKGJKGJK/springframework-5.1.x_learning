@@ -558,11 +558,12 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				// Invoke factory processors registered as beans in the context.
 				/**
 				 * 根据反射机制从BeanDefinitionRegistry(注册表)中找到所有实现BeanFactoryPostProcessor接口的bean,并调用其postProcessorFactoryBean方法。
+				 * 所有实现BeanFactoryPostProcessor接口的bean包含用户定义的Bean和Spring定义的Bean
 				 *
 				 * 注意！！！
 				 * 重点关注！！！
-				 * 在AnnotationConfigApplicationContext中，有一个特殊的后置处理器ConfigurationClassPostProcessor,在此处实例化并执行！！！
-				 * ConfigurationClassPostProcessor后置处理器用于加载用户定义的bean
+				 * 在AnnotationConfigApplicationContext中，有一个Spring定义的后置处理器ConfigurationClassPostProcessor,在此处实例化并执行！！！
+				 * ConfigurationClassPostProcessor用来进行包扫描，注册用户定义的Bean
 				 */
 				invokeBeanFactoryPostProcessors(beanFactory);
 
@@ -721,7 +722,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		// BeanFactory interface not registered as resolvable type in a plain factory.
 		// MessageSource registered (and found for autowiring) as a bean.
 		/**
-		 *
+		 * 此块代码处理的是，如果某个类依赖BeanFactory、ResourceLoader、ApplicationEventPublisher、ApplicationContext，
+		 * 则beanFactory则会把指定的值设置进去
 		 */
 		beanFactory.registerResolvableDependency(BeanFactory.class, beanFactory);
 		beanFactory.registerResolvableDependency(ResourceLoader.class, this);
@@ -742,8 +744,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 		// Register default environment beans.
 		/**
-		 * Spring往往很"智能,通过下面的代码我们可以知道，原来是帮我们注册一些有用的bean,
-		 * 当然我们也可以选择覆盖
+		 * 当用户没有定义的名称为environment、systemProperties、systemEnvironment名称的bean，
+		 * 那么是BeanFactory中会注册Spring内部定义的名称为environment、systemProperties、systemEnvironment的Bean
 		 */
 		// 如果没有定义 "environment" 这个 bean，那么 Spring 会 "手动" 注册一个
 		if (!beanFactory.containsLocalBean(ENVIRONMENT_BEAN_NAME)) {
@@ -778,7 +780,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		/**
 		 * getBeanFactoryPostProcessors() 一般情况下都是null
 		 *
-		 * 注意哦！！！ 获取的BeanFactoryPostProcessor是用户自定义，且没有使用@Component注解交由容器管理的的BeanFactoryPostProcessor、
+		 * 注意哦！！！ 获取的BeanFactoryPostProcessor是用户自定义，且没有使用@Component注解交由容器管理的的BeanFactoryPostProcessor
+		 * 这边的获取的是通过context.addBeanFactoryPostProcessor(new MyBeanFactoryPostProcessor2())添加BeanFactoryPostProcessor实现类
 		 *
 		 * 用户可以在refresh()方法执行之前，通过上下文的addBeanFactoryPostProcessor()方法添加自定义的BeanFactoryPostProcessor实现类
 		 *

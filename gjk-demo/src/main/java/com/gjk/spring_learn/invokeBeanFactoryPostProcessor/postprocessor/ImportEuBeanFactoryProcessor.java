@@ -13,13 +13,12 @@ import org.springframework.stereotype.Component;
  * @date: 2022/5/7 17:43
  * @description:
  */
-@Component
 public class ImportEuBeanFactoryProcessor implements BeanPostProcessor {
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 
-		System.out.println("============beanName================");
+		System.out.println("============" + beanName + "================");
 		return bean;
 	}
 }
