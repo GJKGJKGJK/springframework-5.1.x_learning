@@ -125,6 +125,9 @@ class ConfigurationClassBeanDefinitionReader {
 	private void loadBeanDefinitionsForConfigurationClass(
 			ConfigurationClass configClass, TrackedConditionEvaluator trackedConditionEvaluator) {
 
+		/**
+		 * 暂时都没走这块代码，根据注解猜测是处理@Conditional注解的类的
+		 */
 		if (trackedConditionEvaluator.shouldSkip(configClass)) {
 			String beanName = configClass.getBeanName();
 			if (StringUtils.hasLength(beanName) && this.registry.containsBeanDefinition(beanName)) {
@@ -134,14 +137,26 @@ class ConfigurationClassBeanDefinitionReader {
 			return;
 		}
 
+		/**
+		 * 由@Import导入的普通类 ConfigurationClass在此处注册到容器中
+		 */
 		if (configClass.isImported()) {
 			registerBeanDefinitionForImportedConfigurationClass(configClass);
 		}
 		for (BeanMethod beanMethod : configClass.getBeanMethods()) {
+			/**
+			 * 将ConfigurationClass 即扫描出来的Bean 转成beanDefinition注册到容器中
+			 */
 			loadBeanDefinitionsForBeanMethod(beanMethod);
 		}
 
+		/**
+		 * 这边的处理是将 ConfigurationClass上@ImportResource注解指向的xml 转成BeanDefinition,注册到容器中
+		 */
 		loadBeanDefinitionsFromImportedResources(configClass.getImportedResources());
+		/**
+		 * 这边的处理是将 ConfigurationClass上@Import导入的ImportBeanDefinitionRegistrar实现类 注册的Bean,转成BeanDefinition注册到容器中
+		 */
 		loadBeanDefinitionsFromRegistrars(configClass.getImportBeanDefinitionRegistrars());
 	}
 

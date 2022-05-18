@@ -21,8 +21,18 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProce
 import org.springframework.core.type.AnnotationMetadata;
 
 /**
- * Interface to be implemented by types that register additional bean definitions when
- * processing @{@link Configuration} classes. Useful when operating at the bean definition
+ *
+ * ImportBeanDefinitionRegistrar Spring框架提供的扩展点之一
+ *
+ * 从表面看，我们可以实现这个接口。重写registerBeanDefinitions方法，可以自己通过Spring提供的BeanDefinitionBuilder组装BeanDefinition,然后再注入到registry中
+ * 说白了就是Spring提供给开发人员自己手动注册Bean的接口。
+ *
+ * 从深层次看，我们是否可以通过这个接口动态生生成代理对象，然后注入到容器中呢？
+ * 我猜可以，很有可能SpringAop就是通过这个方式实现的。TODO 有时间看一下AOP的实现源码
+ *
+ * 另外，大名鼎鼎的Mybatis就是通过实现ImportBeanDefinitionRegistrar接口，使用@MapperScan扫描Mapper，再转成变成BeanDefinition注册到Spring容器中的
+ *
+ ** processing @{@link Configuration} classes. Useful when operating at the bean definition
  * level (as opposed to {@code @Bean} method/instance level) is desired or necessary.
  *
  * <p>Along with {@code @Configuration} and {@link ImportSelector}, classes of this type

@@ -613,11 +613,13 @@ class ConfigurationClassParser {
 				for (SourceClass candidate : importCandidates) {
 					/**
 					 * 处理ImportSelector接口实现类
+					 * 此出会直接调用ImportSelector实现类的selectImports方法，返回需要注册的beanName字符串数组，在封装成SourceClass
+					 * ImportSelector的实现类注册的Bean和@Component注解的类一样，都会作为ConfigurationClass交由AnnotationBeanDefinitionReader读取器加载注册BeanDefinition
 					 */
 					if (candidate.isAssignable(ImportSelector.class)) {
 						// Candidate class is an ImportSelector -> delegate to it to determine imports
 						Class<?> candidateClass = candidate.loadClass();
-						//通过反射创建对象
+						//通过反射创建selector对象
 						ImportSelector selector = BeanUtils.instantiateClass(candidateClass, ImportSelector.class);
 						ParserStrategyUtils.invokeAwareMethods(
 								selector, this.environment, this.resourceLoader, this.registry);
@@ -636,6 +638,10 @@ class ConfigurationClassParser {
 					}
 					/**
 					 * 处理实现ImportBeanDefinitionRegistrar接口的类
+					 * ImportBeanDefinitionRegistrar的实现类注册的bean 和ImportSelector的实现类注册的处理方式不同
+					 * 此时不会调用ImportBeanDefinitionRegistrar的实现类的registryBeanDefinitionRegistry方法注册Bean
+					 * ImportBeanDefinitionRegistrar的实现类注册的bean不会作为ConfigurationClass交由Reader读取器解析，
+					 * 而是放到原本的configClass的importBeanDefinitionRegistrarsMap中
 					 */
 					else if (candidate.isAssignable(ImportBeanDefinitionRegistrar.class)) {
 						// Candidate class is an ImportBeanDefinitionRegistrar ->
