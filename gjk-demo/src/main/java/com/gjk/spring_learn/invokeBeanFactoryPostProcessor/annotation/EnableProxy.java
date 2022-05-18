@@ -7,15 +7,12 @@ import java.lang.annotation.Target;
 
 import org.springframework.context.annotation.Import;
 
-import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.Import.MyImportBeanDefinitionRegistry;
+import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.Import.MyImportBeanDefinitionRegistrar;
 
 /**
  * EnableProxy
  *
- * 若在AppConfig类中无@EnableProxy注解，则不代理
- * 否则代理
- *
- * 此注解就是将被注解类导入，由spring内部实例化对象，调用它的registoryBeanDefinition方法，来添加JDKProxyProcessor对应的beanDefinition,最终Spring会根据beanDefinition创建Bean
+ * 使用@EnableProxy动态地将@Import注解中的类导入Spring，由容器托管
  *
  * @author: GJK
  * @date: 2022/5/7 16:59
@@ -23,6 +20,6 @@ import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.Import.MyImportBeanDe
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Import(MyImportBeanDefinitionRegistry.class)
+@Import(MyImportBeanDefinitionRegistrar.class)
 public @interface EnableProxy {
 }

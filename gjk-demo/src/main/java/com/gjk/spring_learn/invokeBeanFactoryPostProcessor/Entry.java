@@ -2,6 +2,7 @@ package com.gjk.spring_learn.invokeBeanFactoryPostProcessor;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.postprocessor.JDKProxyPostProcessor;
 import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.service.UserService;
 
 /**
@@ -20,6 +21,9 @@ public class Entry {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 		context.register(AppConfig.class);
 		context.refresh();
+
+		JDKProxyPostProcessor jdkProxyPostProcessor = (JDKProxyPostProcessor) context.getBean("JDKProxyPostProcessor");
+		jdkProxyPostProcessor.testPrint();
 
 		//获取UserService类型的对象
 		context.getBean(UserService.class).login();

@@ -327,7 +327,7 @@ class ConfigurationClassParser {
 						bdCand = holder.getBeanDefinition();
 					}
 					/**
-					 * 遍历检查@ComponentScan扫描出来的BeanDefinition中是否有@Configuration注解或者@Component注解等注解
+					 * 遍历检查@ComponentScan扫描出来的BeanDefinition中是否有@Configuration注解或者@Component注解及派生注解
 					 *
 					 * 然后当做配置类再解析一遍
 					 */
@@ -342,7 +342,7 @@ class ConfigurationClassParser {
 		/**
 		 * 处理@import注解的导入Bean
 		 *
-		 * ImportSelector、ImportBeanDefinitionRegistrat、普通类
+		 * 针对ImportSelector实现类、ImportBeanDefinitionRegistrat实现类、普通类分别处理
 		 *
 		 */
 		processImports(configClass, sourceClass, getImports(sourceClass), true);
@@ -617,15 +617,20 @@ class ConfigurationClassParser {
 					if (candidate.isAssignable(ImportSelector.class)) {
 						// Candidate class is an ImportSelector -> delegate to it to determine imports
 						Class<?> candidateClass = candidate.loadClass();
+						//通过反射创建对象
 						ImportSelector selector = BeanUtils.instantiateClass(candidateClass, ImportSelector.class);
 						ParserStrategyUtils.invokeAwareMethods(
 								selector, this.environment, this.resourceLoader, this.registry);
+						//判断是否延迟导入，默认为null,所以走else
 						if (selector instanceof DeferredImportSelector) {
 							this.deferredImportSelectorHandler.handle(configClass, (DeferredImportSelector) selector);
 						}
 						else {
+							// 调用ImportSelector实现类的selectImports方法, 得到返回的beanNames字符串数组
 							String[] importClassNames = selector.selectImports(currentSourceClass.getMetadata());
+							// 将BeanNames字符串数组转成Collection<SourceClass>
 							Collection<SourceClass> importSourceClasses = asSourceClasses(importClassNames);
+							// 将上面获取的Collection<SourceClass> 当做@Import注解导入的类，递归处理
 							processImports(configClass, currentSourceClass, importSourceClasses, false);
 						}
 					}
@@ -636,15 +641,17 @@ class ConfigurationClassParser {
 						// Candidate class is an ImportBeanDefinitionRegistrar ->
 						// delegate to it to register additional bean definitions
 						Class<?> candidateClass = candidate.loadClass();
+						//通过反射创建对象
 						ImportBeanDefinitionRegistrar registrar =
 								BeanUtils.instantiateClass(candidateClass, ImportBeanDefinitionRegistrar.class);
+						//判断是否实现Aware相关接口，如果是则注入相关属性
 						ParserStrategyUtils.invokeAwareMethods(
 								registrar, this.environment, this.resourceLoader, this.registry);
 						configClass.addImportBeanDefinitionRegistrar(registrar, currentSourceClass.getMetadata());
 					}
 					else {
 						/**
-						 * 处理不是上面两种情况的类
+						 * 处理不是上面两种情况的类，将普通类当做配置类，再递归调用处理配置类的逻辑processConfigurationClass()
 						 */
 						// Candidate class not an ImportSelector or ImportBeanDefinitionRegistrar ->
 						// process it as an @Configuration class

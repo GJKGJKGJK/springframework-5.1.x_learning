@@ -13,13 +13,13 @@ import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.postprocessor.JDKProx
 /**
  * MyImportBeanDefinitionRegistry
  *
- * 模拟SpringAop ,在这里添加一个创建JDK动态代理的后置处理器
+ *
  *
  * @author: GJK
  * @date: 2022/5/7 17:07
  * @description:
  */
-public class MyImportBeanDefinitionRegistry implements ImportBeanDefinitionRegistrar {
+public class MyImportBeanDefinitionRegistrar implements ImportBeanDefinitionRegistrar {
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 		if(importingClassMetadata.hasAnnotation(EnableProxy.class.getName())){
