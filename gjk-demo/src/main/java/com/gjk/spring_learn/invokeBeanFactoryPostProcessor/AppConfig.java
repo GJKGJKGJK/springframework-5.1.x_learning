@@ -17,8 +17,8 @@ import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.annotation.ImportEu;
  * @date: 2022/5/7 17:38
  * @description:
  */
-@EnableProxy // 为UserServiceImpl类添加代理类的开关
-@ImportEu  //导入ImportEuImportSelector后置处理器的开关
+@EnableProxy // 自定义注解，使用此注解=@Import(MyImportBeanDefinitionRegistry.class)
+@ImportEu  // 自定义注解，使用此注解=@Import(MyImportSelector.class)
 @Configuration
 @ComponentScan("com.gjk.spring_learn.invokeBeanFactoryPostProcessor")
 public class AppConfig {

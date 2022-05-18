@@ -9,9 +9,8 @@ import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.postprocessor.ImportE
 /**
  * MyImportSelector
  *
- * 由@ImportEu注解将此类导入Spring
- *
- * 此类又会向容器导入ImportEuBeanFactoryProcessor类
+ * 自定义的ImportSelector
+ * 实现一个功能：若在导入类中添加@ImportEu注解时，在每个bean创建之前打印一句“=========="+ beanName +"==========”
  *
  * @author: GJK
  * @date: 2022/5/7 17:42
@@ -20,7 +19,10 @@ import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.postprocessor.ImportE
 public class MyImportSelector implements ImportSelector {
 
 	/**
-	 * 理论上Spring会将 实现ImportSelector接口实现类的selectImports方法的返回字符串数组转化成Bean
+	 *
+	 * @param importingClassMetadata  这里的Metadata是AppConfig类的元数据，根据Metadata，我们可以获取到AppConfig类中各种信息
+	 *
+	 * @return   spring内部会将返回的字符串数组通过反射生成Bean,转成BeanDefinition注册到容器中
 	 */
 	@Override
 	public String[] selectImports(AnnotationMetadata importingClassMetadata) {

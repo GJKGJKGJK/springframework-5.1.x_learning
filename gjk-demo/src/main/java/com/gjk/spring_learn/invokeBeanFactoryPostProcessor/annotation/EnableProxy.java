@@ -12,8 +12,9 @@ import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.Import.MyImportBeanDe
 /**
  * EnableProxy
  *
- * 使用@EnableProxy动态地将@Import注解中的类导入Spring，由容器托管
- *
+ * 若在AppConfig类中添加@EnableProxy注解，则通过ImportBeanDefinitionRegistry的实现类MyImportBeanDefinitionRegistry动态的向容器中添加JDKProxyPostProcessor后置处理器的BD
+ * 而不是通过context.registry()方法或者@Component注解等方式向容器中添加BD
+ **
  * @author: GJK
  * @date: 2022/5/7 16:59
  * @description:

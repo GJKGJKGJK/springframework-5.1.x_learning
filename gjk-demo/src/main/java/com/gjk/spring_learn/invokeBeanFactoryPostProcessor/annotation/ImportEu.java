@@ -12,7 +12,9 @@ import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.Import.MyImportSelect
 /**
  * ImportEu
  *
- * 使用@ImportEu会动态地将@Import注解中的类导入Spring，由容器托管
+ * 动态添加ImportEuBeanFactoryProcessor
+ * 若在AppConfig类中添加@ImportEu注解，则通过ImportSelector的实现类MyImportSelector动态的向容器中添加ImportEuBeanFactoryProcessor后置处理器的BD
+ * 而不是通过context.registry()方法或者@Component注解等方式向容器中添加BD
  **
  * @author: GJK
  * @date: 2022/5/7 17:41
