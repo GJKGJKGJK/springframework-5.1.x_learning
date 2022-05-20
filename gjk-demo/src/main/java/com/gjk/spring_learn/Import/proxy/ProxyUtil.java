@@ -1,4 +1,4 @@
-package com.gjk.spring_learn.invokeBeanFactoryPostProcessor.proxy;
+package com.gjk.spring_learn.Import.proxy;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;

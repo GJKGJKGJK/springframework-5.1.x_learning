@@ -264,6 +264,12 @@ class ConfigurationClassParser {
 		}
 		while (sourceClass != null);
 
+		/**
+		 * 这一步非常关键！！！
+		 * 注解内部类、注解类、@Import注解类、实现ImportSelector的类的递归处理，都会进这个方法
+		 * 每次进来，都会讲ConfigurationClass存到解析器的configurationClasses集合中，
+		 * 再在org.springframework.context.annotation.ConfigurationClassPostProcessor#processConfigBeanDefinitions(BeanDefinitionRegistry)方法中几种注册
+		 */
 		this.configurationClasses.put(configClass, configClass);
 	}
 
@@ -282,8 +288,11 @@ class ConfigurationClassParser {
 		if (configClass.getMetadata().isAnnotated(Component.class.getName())) {
 			// Recursively process any member (nested) classes first
 			/**
-			 * 递归处理ConfigurationClass中的加了@Configuration、@Compont或者@Bean注解的内部类
 			 * 一般情况下，不存在内部类
+			 *
+			 * 递归处理ConfigurationClass中的加了@Configuration、@Compont或者@Bean注解的内部类
+			 * 注意！！！此处并不会注册注解内部类，
+			 * 而是会通过递归的方式 将内部类作为ConfigurationClass，存放到解析器的ConfigurationClasses集合中
 			 */
 			processMemberClasses(configClass, sourceClass);
 		}
@@ -316,7 +325,8 @@ class ConfigurationClassParser {
 				/**
 				 * 生成扫描器，并将@ComponentScan注解各个属性值设置到扫描器中
 				 *
-				 * 根据@ComponentScan中的basePackage属性地址，扫描获取所有@Component注解及派生注解@Service、@Controller等注解标识BeanDefinition,并将它们注册到bean工厂
+				 * 根据@ComponentScan中的basePackage属性地址，
+				 * 扫描获取所有@Configuration、@Component注解及派生注解@Service、@Controller等注解标识BeanDefinition,并将它们注册到bean工厂
 				 */
 				Set<BeanDefinitionHolder> scannedBeanDefinitions =
 						this.componentScanParser.parse(componentScan, sourceClass.getMetadata().getClassName());
@@ -329,7 +339,7 @@ class ConfigurationClassParser {
 					/**
 					 * 遍历检查@ComponentScan扫描出来的BeanDefinition中是否有@Configuration注解或者@Component注解及派生注解
 					 *
-					 * 然后当做配置类再解析一遍
+					 * 然后当做配置类递归处理，再解析一遍，并将这些Bean作为ConfigurationClass，存放到解析器的ConfigurationClasses集合中
 					 */
 					if (ConfigurationClassUtils.checkConfigurationClassCandidate(bdCand, this.metadataReaderFactory)) {
 						parse(bdCand.getBeanClassName(), holder.getBeanName());
@@ -344,6 +354,12 @@ class ConfigurationClassParser {
 		 *
 		 * 针对ImportSelector实现类、ImportBeanDefinitionRegistrat实现类、普通类分别处理
 		 *
+		 * 此块代码并没有注册@Import注解的bean、实现ImportSelector的bean、实现ImportBeanDefinitionRegistrar的Bean
+		 * 而是将@Import注解的bean、实现ImportSelector的bean作为ConfigurationClass，存放到解析器的ConfigurationClasses集合中
+		 *
+		 * ！！！实现ImportBeanDefinitionRegistrar的Bean处理方式又不同，
+		 * 而是将它放到使用@Import注解的bean转变的ConfigurationClass对象的importBeanDefinitionRegistrars集合中
+		 *
 		 */
 		processImports(configClass, sourceClass, getImports(sourceClass), true);
 
@@ -351,6 +367,10 @@ class ConfigurationClassParser {
 		/**
 		 * 处理@ImportResource注解导入的Bean
 		 * @ImportResource 用来配置xml配置文件的
+		 *
+		 * 因为看到ConfigurationClass对象中有ImportResources集合
+		 * 猜测 XMl配置文件托管Bean，也不会作为ConfigurationClass,
+		 * 而是存放到使用@ImportResource注解转变的ConfigurationClass的ImportResources集合中
 		 */
 		AnnotationAttributes importResource =
 				AnnotationConfigUtils.attributesFor(sourceClass.getMetadata(), ImportResource.class);
@@ -365,7 +385,10 @@ class ConfigurationClassParser {
 
 		// Process individual @Bean methods
 		/**
-		 * 处理@Bean注解的类
+		 * 处理@Bean注解的方法输出的Bean
+		 *
+		 * 使用@Bean注解的方法输出的Bean，也不会作为ConfigurationClass，存放到解析器的ConfigurationClasses中
+		 * 而是存放到对应ConfigurationClass的BeanMethods集合中
 		 */
 		Set<MethodMetadata> beanMethods = retrieveBeanMethodMetadata(sourceClass);
 		for (MethodMetadata methodMetadata : beanMethods) {
@@ -638,10 +661,12 @@ class ConfigurationClassParser {
 					}
 					/**
 					 * 处理实现ImportBeanDefinitionRegistrar接口的类
+					 *
 					 * ImportBeanDefinitionRegistrar的实现类注册的bean 和ImportSelector的实现类注册的处理方式不同
 					 * 此时不会调用ImportBeanDefinitionRegistrar的实现类的registryBeanDefinitionRegistry方法注册Bean
-					 * ImportBeanDefinitionRegistrar的实现类注册的bean不会作为ConfigurationClass交由Reader读取器解析，
-					 * 而是放到原本的configClass的importBeanDefinitionRegistrarsMap中
+					 * ImportBeanDefinitionRegistrar的实现类注册的bean也不会作为ConfigurationClass，存放到解析器的ConfigurationClasses集合中，
+					 *
+					 * 而是放到原本的ConfigurationClass的importBeanDefinitionRegistrarsMap中！！！！
 					 */
 					else if (candidate.isAssignable(ImportBeanDefinitionRegistrar.class)) {
 						// Candidate class is an ImportBeanDefinitionRegistrar ->
@@ -657,7 +682,8 @@ class ConfigurationClassParser {
 					}
 					else {
 						/**
-						 * 处理不是上面两种情况的类，将普通类当做配置类，再递归调用处理配置类的逻辑processConfigurationClass()
+						 * 处理不是上面两种情况的类，将普通类当做配置类，再递归调用处理配置类的逻辑
+						 * 此处 @Import注解的bean、实现ImportSelector接口的Bean会作为ConfigurationClass，存放到解析器的ConfigurationClasses集合中
 						 */
 						// Candidate class not an ImportSelector or ImportBeanDefinitionRegistrar ->
 						// process it as an @Configuration class

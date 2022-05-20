@@ -75,13 +75,14 @@ class ComponentScanAnnotationParser {
 
 	public Set<BeanDefinitionHolder> parse(AnnotationAttributes componentScan, final String declaringClass) {
 		/**
-		 * new一个BeanDefinitionScanner扫描器
+		 * Spring会new一个新的BeanDefinitionScanner扫描器，处理包扫描
+		 * 而不是使用new AnnotationConfigApplicationContext()是创建的扫描器
 		 */
 		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(this.registry,
 				componentScan.getBoolean("useDefaultFilters"), this.environment, this.resourceLoader);
 
 		/**
-		 * 根据@ComponentScan注解的属性值，给扫描器设置BeanName生成器
+		 * 根据@ComponentScan注解的属性值，给扫描器设置全局的BeanName生成器
 		 */
 		Class<? extends BeanNameGenerator> generatorClass = componentScan.getClass("nameGenerator");
 		boolean useInheritedGenerator = (BeanNameGenerator.class == generatorClass);
@@ -89,7 +90,7 @@ class ComponentScanAnnotationParser {
 				BeanUtils.instantiateClass(generatorClass));
 
 		/**
-		 * 根据@ComponentScan注解的属性值，给扫描器设置作用域
+		 * 根据@ComponentScan注解的属性值，给扫描器设置全局的作用域
 		 */
 		ScopedProxyMode scopedProxyMode = componentScan.getEnum("scopedProxy");
 		if (scopedProxyMode != ScopedProxyMode.DEFAULT) {
@@ -101,12 +102,12 @@ class ComponentScanAnnotationParser {
 		}
 
 		/**
-		 * 根据@ComponentScan注解的属性值，给扫描器设置属性，这个不知道干啥用的，后面了解洗一下
+		 * 根据@ComponentScan注解的属性值，给扫描器设置属性，这个不知道干啥用的，后面了解再一下
 		 */
 		scanner.setResourcePattern(componentScan.getString("resourcePattern"));
 
 		/**
-		 * 根据@ComponentScan注解的属性值，分别给扫描器设置包含和不包含的扫描范围
+		 * 根据@ComponentScan注解的过滤范围属性值，分别给扫描器设置过滤范围
 		 */
 		for (AnnotationAttributes filter : componentScan.getAnnotationArray("includeFilters")) {
 			for (TypeFilter typeFilter : typeFiltersFor(filter)) {
@@ -120,7 +121,7 @@ class ComponentScanAnnotationParser {
 		}
 
 		/**
-		 * 根据@ComponentScan注解的属性值，给扫描器设置BeanDefinition是否懒加载
+		 * 根据@ComponentScan注解的属性值，给扫描器设置扫描的BeanDefinition是否全局懒加载 ，默认不是全局懒加载
 		 */
 		boolean lazyInit = componentScan.getBoolean("lazyInit");
 		if (lazyInit) {

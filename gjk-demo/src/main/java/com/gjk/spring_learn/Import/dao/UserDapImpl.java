@@ -1,9 +1,9 @@
-package com.gjk.spring_learn.invokeBeanFactoryPostProcessor.dao;
+package com.gjk.spring_learn.Import.dao;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Repository;
 
-import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.TestDaoInUserDaoImpl;
+import com.gjk.spring_learn.Import.TestDaoInUserDaoImpl;
 
 /**
  * UserDapImpl

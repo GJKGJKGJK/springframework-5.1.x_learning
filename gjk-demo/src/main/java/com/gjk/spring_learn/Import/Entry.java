@@ -1,9 +1,9 @@
-package com.gjk.spring_learn.invokeBeanFactoryPostProcessor;
+package com.gjk.spring_learn.Import;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.postprocessor.JDKProxyPostProcessor;
-import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.service.UserService;
+import com.gjk.spring_learn.Import.postprocessor.JDKProxyPostProcessor;
+import com.gjk.spring_learn.Import.service.UserService;
 
 /**
  * Entry

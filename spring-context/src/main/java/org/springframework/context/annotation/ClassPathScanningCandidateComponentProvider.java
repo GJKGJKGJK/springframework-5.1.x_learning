@@ -315,6 +315,9 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 			return addCandidateComponentsFromIndex(this.componentsIndex, basePackage);
 		}
 		else {
+			/**
+			 * 走下面这个
+			 */
 			return scanCandidateComponents(basePackage);
 		}
 	}
@@ -431,6 +434,11 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 					try {
 						MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(resource);
 						if (isCandidateComponent(metadataReader)) {
+							/**
+							 * 注意！！！扫描器生成的BeanDefinition都是ScannedGenericBeanDefinition类型的
+							 * 同时ScannedGenericBeanDefinition继承GennericBeanDefinition，GenericBeanDefinition又继承AbstractBeanDefinition
+							 * 所以ScannedGennericBeanDefinition的BD属于AbstarctBeanDefinition
+							 */
 							ScannedGenericBeanDefinition sbd = new ScannedGenericBeanDefinition(metadataReader);
 							sbd.setSource(resource);
 							if (isCandidateComponent(sbd)) {

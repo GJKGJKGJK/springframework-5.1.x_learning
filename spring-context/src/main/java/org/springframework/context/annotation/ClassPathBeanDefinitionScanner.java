@@ -276,21 +276,41 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 			/**
 			 * 解析包路径下的注解bean,返回BeanDefinition集合
 			 *
-			 * 具体怎么解析的，有空再分析
+			 * 具体怎么解析的，通过ASM字节码框架解析的，TODO 有时间分析一下
 			 *
 			 * 此时的BeanDefinition中一些重要的属性值还没有设置，如作用域scope
 			 */
 			Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
 			for (BeanDefinition candidate : candidates) {
+				/**
+				 * 使用策略模式设置作用域
+				 * 扫描器中的scopeMetadataResolver是一个策略接口，根据BeanDefinition中元数据的@Scope注解返回作用域对象
+				 * 再将作用域对象设置到BeanDefinition中
+				 */
 				ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(candidate);
 				candidate.setScope(scopeMetadata.getScopeName());
+				/**
+				 * 生成beanName
+				 */
 				String beanName = this.beanNameGenerator.generateBeanName(candidate, this.registry);
+
 				if (candidate instanceof AbstractBeanDefinition) {
+					/**
+					 * 扫描器扫出来的BD是ScannedGenericBeanDefinition,所以此处代码必走
+					 *
+					 * 这边是先给BeanDefinition的一些属性设置默认值
+					 */
 					postProcessBeanDefinition((AbstractBeanDefinition) candidate, beanName);
 				}
 				if (candidate instanceof AnnotatedBeanDefinition) {
+					/**
+					 * 如果是使用注解的Bean,此处会根据元数据中的@Lazy、@Primary、@DependsOn、@Role、@Description注解再设置Bean的属性值
+					 */
 					AnnotationConfigUtils.processCommonDefinitionAnnotations((AnnotatedBeanDefinition) candidate);
 				}
+				/**
+				 * 这边会检查Bean有没有注册，如果已经注册，不会重复注册
+				 */
 				if (checkCandidate(beanName, candidate)) {
 					BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(candidate, beanName);
 					definitionHolder =
@@ -313,7 +333,12 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	 * @param beanName the generated bean name for the given bean
 	 */
 	protected void postProcessBeanDefinition(AbstractBeanDefinition beanDefinition, String beanName) {
+		/**
+		 * 用扫描器中的默认值 ，给BeanDefinition设置懒加载、自动注入方式、依赖检查、初始化方法、销毁方法等默认属性
+		 * 除了懒加载，其他属性都是空的.......
+		 */
 		beanDefinition.applyDefaults(this.beanDefinitionDefaults);
+		//下面也是设置属性，但是目前没走到
 		if (this.autowireCandidatePatterns != null) {
 			beanDefinition.setAutowireCandidate(PatternMatchUtils.simpleMatch(this.autowireCandidatePatterns, beanName));
 		}

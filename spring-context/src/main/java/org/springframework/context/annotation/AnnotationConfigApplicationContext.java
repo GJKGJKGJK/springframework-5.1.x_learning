@@ -70,11 +70,15 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 		 * 在父类GenericApplicationContext构造方法中，给上下文设置了DefaultListableBeanFactory工厂
 		 *
 		 * 设置一个注解BeanDefinition读取器。
-		 * 在初始化读取器时，会向BeanFactory中注册Spring定义的几个重要的类，以及设置BeanFactory的排序器和自动注入解析器
+		 * 在初始化读取器时，会向BeanFactory中注册Spring定义的几个重要类的BeanDefinition，以及设置BeanFactory的排序器和自动注入解析器
 		 */
 		this.reader = new AnnotatedBeanDefinitionReader(this);
 		/**
-		 * 初始化一个BeanDefinition扫描器,用于扫描@ComponentScan注解配置类或者包下的所有类，将被注解标注的bean生成对应的AnnotationBeanDefintion
+		 * 初始化一个BeanDefinition扫描器,可以用来扫描包或者类
+		 * 但是！！！实际上我们扫描包的工作并不是这个scanner对象处理的，在包扫描、解析过程中会new一个新的ClassPathBeanDefinitionScanner对象
+		 * 直接贴出代码：org.springframework.context.annotation.ComponentScanAnnotationParser#parse(AnnotationAttributes,String)
+		 * Spring在扫描包时，会重新创建一个ClassPathBeanDefinitionScanner对象来扫描包
+		 * 这边的scanner，仅仅是提供给开发人员通过AnnotationConfigApplicationContext获取使用的
 		 */
 		this.scanner = new ClassPathBeanDefinitionScanner(this);
 	}

@@ -1,12 +1,11 @@
-package com.gjk.spring_learn.invokeBeanFactoryPostProcessor.postprocessor;
+package com.gjk.spring_learn.Import.postprocessor;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.stereotype.Component;
 
-import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.proxy.MyInvocationHandler;
-import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.proxy.ProxyUtil;
-import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.service.impl.UserServiceImpl;
+import com.gjk.spring_learn.Import.proxy.MyInvocationHandler;
+import com.gjk.spring_learn.Import.proxy.ProxyUtil;
+import com.gjk.spring_learn.Import.service.impl.UserServiceImpl;
 
 /**
  * JDKProxyPostProcessor

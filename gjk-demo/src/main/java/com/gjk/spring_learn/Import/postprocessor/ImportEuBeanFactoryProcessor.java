@@ -1,8 +1,7 @@
-package com.gjk.spring_learn.invokeBeanFactoryPostProcessor.postprocessor;
+package com.gjk.spring_learn.Import.postprocessor;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.stereotype.Component;
 
 /**
  * ImportEuBeanFactoryProcessor

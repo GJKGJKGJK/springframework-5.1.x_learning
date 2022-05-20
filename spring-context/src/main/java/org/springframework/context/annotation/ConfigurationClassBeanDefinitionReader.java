@@ -138,24 +138,24 @@ class ConfigurationClassBeanDefinitionReader {
 		}
 
 		/**
-		 * 由@Import导入的普通类 ConfigurationClass在此处注册到容器中
+		 * 注册由@Import导入的类对应的ConfigurationClass
 		 */
 		if (configClass.isImported()) {
 			registerBeanDefinitionForImportedConfigurationClass(configClass);
 		}
+		/**
+		 * 注册使用@Bean方法导入的Bean
+		 */
 		for (BeanMethod beanMethod : configClass.getBeanMethods()) {
-			/**
-			 * 将ConfigurationClass 即扫描出来的Bean 转成beanDefinition注册到容器中
-			 */
 			loadBeanDefinitionsForBeanMethod(beanMethod);
 		}
 
 		/**
-		 * 这边的处理是将 ConfigurationClass上@ImportResource注解指向的xml 转成BeanDefinition,注册到容器中
+		 * 注册使用@ImportResource注解指向的XML导入的Bean
 		 */
 		loadBeanDefinitionsFromImportedResources(configClass.getImportedResources());
 		/**
-		 * 这边的处理是将 ConfigurationClass上@Import导入的ImportBeanDefinitionRegistrar实现类 注册的Bean,转成BeanDefinition注册到容器中
+		 * 注册ImportBeanDefinitionRegistrar导入的Bean
 		 */
 		loadBeanDefinitionsFromRegistrars(configClass.getImportBeanDefinitionRegistrars());
 	}

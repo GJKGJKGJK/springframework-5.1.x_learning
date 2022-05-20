@@ -65,13 +65,17 @@ final class PostProcessorRegistrationDelegate {
 			/**
 			 * 此块代码处理的是用户自定义，且没有交由spring托管的BeanFactoryPostProcessor和BeanFactoryRegistryPostProcessor的实现类
 			 *
+			 * 做了什么？？？
+			 * 用户已经实例化
+			 * 对上述的实现类根据实现的接口分类,并调用BeanFactoryRegistryPostProcessor实现类的postProcessBeanDefinitionRegistry方法
+			 *
 			 * BeanFactoryPostProcessor 是 BeanFactoryRegistryPostProcessor的父接口，定义两个集合分别存放各自实现类
 			 *
 			 * 且优先调用BeanDefinitionRegistryPostProcessor接口的postProcessorBeanDefinitionRegistry方法
 			 */
-			//存放的是所有的(用户定义的和Spring定义的)BeanFactoryRegistryPostProcessor的实现类
-			List<BeanFactoryPostProcessor> regularPostProcessors = new ArrayList<>();
 			//存放的是用户自定义的，且没有交由spring托管的BeanFactoryPostProcessor接口实现类
+			List<BeanFactoryPostProcessor> regularPostProcessors = new ArrayList<>();
+			//存放的是所有的(用户定义的和Spring定义的)BeanFactoryRegistryPostProcessor的实现类
 			List<BeanDefinitionRegistryPostProcessor> registryProcessors = new ArrayList<>();
 
 			for (BeanFactoryPostProcessor postProcessor : beanFactoryPostProcessors) {
@@ -95,9 +99,12 @@ final class PostProcessorRegistrationDelegate {
 
 			// First, invoke the BeanDefinitionRegistryPostProcessors that implement PriorityOrdered.
 			/**
-			 * 目前只有一个实现类ConfigurationClassPostProcessor，而用户定义的且交由Spring托管的BeanDefinitionRegistryPostProcessor接口实现类还没加载进容器
+			 * 目前只有一个实现类ConfigurationClassPostProcessor，
+			 * 而用户定义的且交由Spring托管的BeanDefinitionRegistryPostProcessor接口实现类还没加载进容器
 			 *
 			 * 所以此块代码处理的是Spring定义的ConfigurationClassPostProcessor
+			 * Spring先实例化ConfigurationClassPostProcessor
+			 * 再调用ConfigurationClassPostProcessor的postProcessBeanDefinitionRegistry方法    核心啊啊啊啊啊！！！！！！
 			 *
 			 * 优先处理实现PriorityOrdered接口的bean，初始化这些bean并存入currentRegistryProcessors集合中
 			 *
@@ -121,7 +128,9 @@ final class PostProcessorRegistrationDelegate {
 			currentRegistryProcessors.clear();
 
 			/**
+			 * 此时用户自定义的，且交给Spring托管的Bean都已注册
 			 * 此块代码处理的是用户自定义的、由Spring扫描出来的BeanDefinitionRegistryPostProcessor接口实现类
+			 * 这里会调用上述实现类的PostProcessBeanDefinitionRegistry方法
 			 *
 			 * 优先处理实现Ordered接口且没有实现PriorityOrdered接口的实现类，实例化这些bean并存入currentRegistryProcessors集合中
 			 */
@@ -143,7 +152,9 @@ final class PostProcessorRegistrationDelegate {
 			currentRegistryProcessors.clear();
 
 			/**
-			 * 此块代码处理的是在处理上面代码过程中，如果产生新的BeanDefinitionRegistoryPostProcessor接口实现类，那么循环处理
+			 * 此块代码处理用户注册的，且交由Spring托管的BeanDefinitionRegistryPostProcessor实现类
+			 * Spring先实例化用户注册的，且交由Spring托管的BeanDefinitionRegistryPostProcessor实现类
+			 * 再调用其PostProcessBeanDefinitionRegistry方法
 			 *
 			 * 实例化这些bean并存入currentRegistryProcessors集合中
 			 */
@@ -171,7 +182,7 @@ final class PostProcessorRegistrationDelegate {
 
 			// Now, invoke the postProcessBeanFactory callback of all processors handled so far.
 			/**
-			 * 集中调用所有的BeanDefinitionRegistryPostProcessor接口实现类的postprocessorBeanFactory方法
+			 * 最后集中调用所有的BeanDefinitionRegistryPostProcessor接口实现类的postprocessorBeanFactory方法
 			 * （小提示：BeanDefinitionRegistoryPostProcessor接口继承BeanFactoryPostProcessor接口）
 			 */
 			invokeBeanFactoryPostProcessors(registryProcessors, beanFactory);
@@ -191,6 +202,16 @@ final class PostProcessorRegistrationDelegate {
 			invokeBeanFactoryPostProcessors(beanFactoryPostProcessors, beanFactory);
 		}
 
+		/**
+		 * ==================================================================================================================
+		 * 至此！！！
+		 * 所有的（用户定义且没有交给Spring托管、Spring定义的、用户定义且交给Spring托管的）BeanDefinitionRegistryPostProcessor实现类
+		 * 的postProcessBeanDefinitionRegistry()方法和postProcessBeanFactory()方法全部执行完毕
+		 *
+		 * 用户定义的，且没有交由Spring托管的BeanFactoryPostProcessor实现类的postProcessBeanFactory()方法也已经全部执行完毕
+		 *===================================================================================================================
+		 */
+
 		// Do not initialize FactoryBeans here: We need to leave all regular beans
 		// uninitialized to let the bean factory post-processors apply to them!
 		/**
@@ -198,8 +219,9 @@ final class PostProcessorRegistrationDelegate {
 		 *  而且还有Spring定义的两个BeanFactory:ConfigurationClassPostProcessor 和 EventListenerMethodProcessor
 		 *  但是ConfigurationClassPostProcessor在前面已经处理过，此时会跳过
 		 *
-		 *  所以此块代码处理的是交由Spring管理的所有实现BeanFactoryPostProcessor接口的实现类
-		 *  以及Spring定义的EventListenerMethodProcessor
+		 *  所以此块代码处理的是交由Spring管理的所有实现BeanFactoryPostProcessor接口的实现以及Spring定义的EventListenerMethodProcessor
+		 *  根据实现排序接口情况进行分类
+		 *  并且Spring先实例化同时实现PriorityOrdered排序接口的BeanFactoryPostProcessor实现类
 		 */
 		String[] postProcessorNames =
 				beanFactory.getBeanNamesForType(BeanFactoryPostProcessor.class, true, false);
@@ -236,7 +258,8 @@ final class PostProcessorRegistrationDelegate {
 		// Next, invoke the BeanFactoryPostProcessors that implement Ordered.
 		/**
 		 *  处理同时实现ordered接口的BeanFactoryPostProcessor实现类
-		 *  排序，再调用postProcessorBeanFactory方法
+		 *  Spring先实例化上述的Bean
+		 *  再排序，调用postProcessorBeanFactory方法
 		 */
 		List<BeanFactoryPostProcessor> orderedPostProcessors = new ArrayList<>();
 		for (String postProcessorName : orderedPostProcessorNames) {
@@ -248,7 +271,9 @@ final class PostProcessorRegistrationDelegate {
 		// Finally, invoke all other BeanFactoryPostProcessors.
 		/**
 		 *  处理剩下的BeanFactoryPostProcessor实现类
-		 *  没有实现排序接口，不排序直接调用postProcessorBeanFactory方法
+		 *  Spring先实例化上述的Bean
+		 *  因为没有实现排序接口，不排序
+		 *  直接调用postProcessorBeanFactory方法
 		 */
 		List<BeanFactoryPostProcessor> nonOrderedPostProcessors = new ArrayList<>();
 		for (String postProcessorName : nonOrderedPostProcessorNames) {

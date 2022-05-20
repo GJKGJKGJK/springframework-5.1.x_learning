@@ -1,4 +1,4 @@
-package com.gjk.spring_learn.invokeBeanFactoryPostProcessor.Import;
+package com.gjk.spring_learn.Import.Import;
 
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -7,8 +7,8 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.type.AnnotationMetadata;
 
-import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.annotation.EnableProxy;
-import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.postprocessor.JDKProxyPostProcessor;
+import com.gjk.spring_learn.Import.annotation.EnableProxy;
+import com.gjk.spring_learn.Import.postprocessor.JDKProxyPostProcessor;
 
 /**
  * MyImportBeanDefinitionRegistry

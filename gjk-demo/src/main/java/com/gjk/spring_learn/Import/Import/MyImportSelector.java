@@ -1,10 +1,10 @@
-package com.gjk.spring_learn.invokeBeanFactoryPostProcessor.Import;
+package com.gjk.spring_learn.Import.Import;
 
 import org.springframework.context.annotation.ImportSelector;
 import org.springframework.core.type.AnnotationMetadata;
 
-import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.annotation.ImportEu;
-import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.postprocessor.ImportEuBeanFactoryProcessor;
+import com.gjk.spring_learn.Import.annotation.ImportEu;
+import com.gjk.spring_learn.Import.postprocessor.ImportEuBeanFactoryProcessor;
 
 /**
  * MyImportSelector

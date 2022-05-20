@@ -1,15 +1,13 @@
-package com.gjk.spring_learn.invokeBeanFactoryPostProcessor;
+package com.gjk.spring_learn.Import;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.ImportResource;
-import org.springframework.stereotype.Component;
 
-import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.annotation.EnableProxy;
-import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.annotation.ImportEu;
-import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.proxy.MyInvocationHandler;
+import com.gjk.spring_learn.Import.annotation.EnableProxy;
+import com.gjk.spring_learn.Import.annotation.ImportEu;
+import com.gjk.spring_learn.Import.proxy.MyInvocationHandler;
 
 /**
  * AppConfig
@@ -23,7 +21,7 @@ import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.proxy.MyInvocationHan
 @EnableProxy // 自定义注解，使用此注解=@Import(MyImportBeanDefinitionRegistry.class)
 @ImportEu  // 自定义注解，使用此注解=@Import(MyImportSelector.class)
 @Configuration
-@ComponentScan("com.gjk.spring_learn.invokeBeanFactoryPostProcessor")
+@ComponentScan("com.gjk.spring_learn.Import")
 @Import(MyInvocationHandler.class)
 public class AppConfig {
 

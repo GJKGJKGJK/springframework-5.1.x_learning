@@ -115,7 +115,7 @@ abstract class ConfigurationClassUtils {
 		if (isFullConfigurationCandidate(metadata)) {
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL);
 		}
-		//从元数据判断是否使用某些注解
+		//从元数据判断是否使用@Component @ComponentScan @Import @ImportResource注解
 		else if (isLiteConfigurationCandidate(metadata)) {
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_LITE);
 		}

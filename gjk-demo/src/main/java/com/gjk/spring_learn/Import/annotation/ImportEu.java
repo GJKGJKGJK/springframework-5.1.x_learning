@@ -1,4 +1,4 @@
-package com.gjk.spring_learn.invokeBeanFactoryPostProcessor.annotation;
+package com.gjk.spring_learn.Import.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 import org.springframework.context.annotation.Import;
 
-import com.gjk.spring_learn.invokeBeanFactoryPostProcessor.Import.MyImportSelector;
+import com.gjk.spring_learn.Import.Import.MyImportSelector;
 
 /**
  * ImportEu

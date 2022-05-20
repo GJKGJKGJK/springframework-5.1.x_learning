@@ -711,7 +711,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		 * postProcessBeforeInitialization方法主要给Bean设置一些属性值
  		 */
 		beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
-		//可能
+
 		beanFactory.ignoreDependencyInterface(EnvironmentAware.class);
 		beanFactory.ignoreDependencyInterface(EmbeddedValueResolverAware.class);
 		beanFactory.ignoreDependencyInterface(ResourceLoaderAware.class);
