@@ -22,7 +22,6 @@ import com.gjk.spring_learn.Import.proxy.MyInvocationHandler;
 @ImportEu  // 自定义注解，使用此注解=@Import(MyImportSelector.class)
 @Configuration
 @ComponentScan("com.gjk.spring_learn.Import")
-@Import(MyInvocationHandler.class)
 public class AppConfig {
 
 	@Bean

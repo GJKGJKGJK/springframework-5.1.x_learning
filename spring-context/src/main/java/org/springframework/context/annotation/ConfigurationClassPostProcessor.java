@@ -286,7 +286,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			/**
 			 * 判断是否为全注解或者部分注解。
 			 * 全注解：@Configuration注解；
-			 * 部分注解：@Component、@Import、@ImportResource、@ComponentScan、@Bean注解
+			 * 部分注解：@Component、@Import、@ImportResource、@ComponentScan
 			 *
 			 * 正常Spring流程下都没有标注,会走到下面的else if中
 			 */
@@ -436,8 +436,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			BeanDefinition beanDef = beanFactory.getBeanDefinition(beanName);
 			/**
 			 * 判断Bean是不是全注解类，即是否使用了@Configuration注解
-			 *
-			 * 下面只对@Configuration注解的类进行处理
+			 * 并将全注解的BeanDefinition收集
 			 */
 			if (ConfigurationClassUtils.isFullConfigurationClass(beanDef)) {
 				if (!(beanDef instanceof AbstractBeanDefinition)) {
@@ -453,11 +452,17 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 				configBeanDefs.put(beanName, (AbstractBeanDefinition) beanDef);
 			}
 		}
+		/**
+		 * 全注解BeanDefinition集合为空，直接return
+		 */
 		if (configBeanDefs.isEmpty()) {
 			// nothing to enhance -> return immediately
 			return;
 		}
 
+		/**
+		 * 下面只针对全注解Bean做处理
+		 */
 		ConfigurationClassEnhancer enhancer = new ConfigurationClassEnhancer();
 		for (Map.Entry<String, AbstractBeanDefinition> entry : configBeanDefs.entrySet()) {
 			AbstractBeanDefinition beanDef = entry.getValue();
@@ -468,7 +473,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 				Class<?> configClass = beanDef.resolveBeanClass(this.beanClassLoader);
 				if (configClass != null) {
 					/**
-					 * 给ConfigurationClass创建Cglib代理对象
+					 * 给ConfigurationClass创建Cglib代理对象，
+					 * 并对代理对象设置两个方法拦截器：beanMethodIntercept 和 beanFactoryAwareMethodIntercept
 					 */
 					Class<?> enhancedClass = enhancer.enhance(configClass, this.beanClassLoader);
 					if (configClass != enhancedClass) {

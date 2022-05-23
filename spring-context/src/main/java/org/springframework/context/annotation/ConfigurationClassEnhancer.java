@@ -95,6 +95,10 @@ class ConfigurationClassEnhancer {
 	 * @return the enhanced subclass
 	 */
 	public Class<?> enhance(Class<?> configClass, @Nullable ClassLoader classLoader) {
+		/**
+		 * 判断全注解beans是否实现EnhancedConfiguration接口
+		 * 创建代理时会给代理对象设置接口EnhancedConfiguration，如果已经实现，说明该bean已经创建了 代理对象,直接return
+		 */
 		if (EnhancedConfiguration.class.isAssignableFrom(configClass)) {
 			if (logger.isDebugEnabled()) {
 				logger.debug(String.format("Ignoring request to enhance %s as it has " +
@@ -107,7 +111,8 @@ class ConfigurationClassEnhancer {
 			return configClass;
 		}
 		/**
-		 * 创建cglib代理对象
+		 * 先创建字节码增强器，给增强器设置一系列属性和拦截器
+		 * 由字节码增强器创建代理对象
 		 */
 		Class<?> enhancedClass = createClass(newEnhancer(configClass, classLoader));
 		if (logger.isTraceEnabled()) {
@@ -144,8 +149,8 @@ class ConfigurationClassEnhancer {
 		enhancer.setStrategy(new BeanFactoryAwareGeneratorStrategy(classLoader));
 		/**
 		 * 给enhancer设置Spring定义的两个回调方法：
-		 * BeanMethodInterceptor: 拦截@Bean方法的调用，以确保正确处理bean语义，例如作用域和AOP代理
-		 * BeanFactoryAwareMethodInterceptor:拦截@Configuration类实例的任何beanfactoryAware . setbeanfactory (BeanFactory)调用，以便记录BeanFactory。
+		 * BeanMethodInterceptor: 拦截@Bean方法的调用，会从BeanFactory中获取实例返回，而不是通过@Bean方法返回
+		 * BeanFactoryAwareMethodInterceptor:当@Configuration注解类实现了BeanFactoryAware接口，调用setBeanfactory接口时，会将上下文中BeanFactory塞入
 		 */
 		enhancer.setCallbackFilter(CALLBACK_FILTER);
 		enhancer.setCallbackTypes(CALLBACK_FILTER.getCallbackTypes());
@@ -384,7 +389,7 @@ class ConfigurationClassEnhancer {
 			}
 
 			/**
-			 * 当 BeanMethod正在被创建时 处理
+			 * 当@Bean方法第一次被拦截时，是通过new对象的方式返回bean的
 			 */
 			if (isCurrentlyInvokedFactoryMethod(beanMethod)) {
 				// The factory is calling the bean method in order to instantiate and register the bean
@@ -400,10 +405,11 @@ class ConfigurationClassEnhancer {
 									"these container lifecycle issues; see @Bean javadoc for complete details.",
 							beanMethod.getDeclaringClass().getSimpleName(), beanMethod.getName()));
 				}
-				//返回CGlib代理对象
 				return cglibMethodProxy.invokeSuper(enhancedConfigInstance, beanMethodArgs);
 			}
-
+			/**
+			 * 除第一次外，其他任何时候调用@Bean方法，返回的都是从BeanFactory getBean的
+			 */
 			return resolveBeanReference(beanMethod, beanMethodArgs, beanFactory, beanName);
 		}
 
@@ -414,6 +420,10 @@ class ConfigurationClassEnhancer {
 			// the bean method, direct or indirect. The bean may have already been marked
 			// as 'in creation' in certain autowiring scenarios; if so, temporarily set
 			// the in-creation status to false in order to avoid an exception.
+			/**
+			 * Bean当前正在创建，这边肯定是false
+			 * 因为能进这个方法，就说明已经创建过了
+			 */
 			boolean alreadyInCreation = beanFactory.isCurrentlyInCreation(beanName);
 			try {
 				if (alreadyInCreation) {
@@ -431,6 +441,9 @@ class ConfigurationClassEnhancer {
 						}
 					}
 				}
+				/**
+				 * 这边就是从BeanFactory中通过getBean方法获取Bean
+				 */
 				Object beanInstance = (useArgs ? beanFactory.getBean(beanName, beanMethodArgs) :
 						beanFactory.getBean(beanName));
 				if (!ClassUtils.isAssignableValue(beanMethod.getReturnType(), beanInstance)) {
