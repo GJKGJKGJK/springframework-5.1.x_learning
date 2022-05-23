@@ -41,12 +41,20 @@ abstract class BeanAnnotationHelper {
 		return AnnotatedElementUtils.hasAnnotation(method, Bean.class);
 	}
 
+	/**
+	 * beanNameCache 是一个Map<Method, String>
+	 * 以缓存-》beanMehtod-》@Bean注解属性顺序，从中获取BeanName并返回
+
+	 * @param beanMethod
+	 * @return
+	 */
 	public static String determineBeanNameFor(Method beanMethod) {
 		String beanName = beanNameCache.get(beanMethod);
 		if (beanName == null) {
 			// By default, the bean name is the name of the @Bean-annotated method
 			beanName = beanMethod.getName();
 			// Check to see if the user has explicitly set a custom bean name...
+			// 获取@Bean的所有属性键值
 			AnnotationAttributes bean =
 					AnnotatedElementUtils.findMergedAnnotationAttributes(beanMethod, Bean.class, false, false);
 			if (bean != null) {

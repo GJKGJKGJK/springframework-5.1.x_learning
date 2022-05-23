@@ -260,8 +260,14 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			// Simply call processConfigurationClasses lazily at this point then.
 			processConfigBeanDefinitions((BeanDefinitionRegistry) beanFactory);
 		}
-
+		/**
+		 * 通过Cglib，给全注解类创建代理对象，即给@Configuration注解标注的类创建代理对象
+		 * 再向全注解类的BeanDefnition的beanClass属性设置代理对象
+		 */
 		enhanceConfigurationClasses(beanFactory);
+		/**
+		 * 向BeanFactory的beanPostProcessors集合添加ImportAwareBeanPostProcessor后置处理器
+		 */
 		beanFactory.addBeanPostProcessor(new ImportAwareBeanPostProcessor(beanFactory));
 	}
 
@@ -428,7 +434,11 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		Map<String, AbstractBeanDefinition> configBeanDefs = new LinkedHashMap<>();
 		for (String beanName : beanFactory.getBeanDefinitionNames()) {
 			BeanDefinition beanDef = beanFactory.getBeanDefinition(beanName);
-			//判断是否是@Configuration注解的类
+			/**
+			 * 判断Bean是不是全注解类，即是否使用了@Configuration注解
+			 *
+			 * 下面只对@Configuration注解的类进行处理
+			 */
 			if (ConfigurationClassUtils.isFullConfigurationClass(beanDef)) {
 				if (!(beanDef instanceof AbstractBeanDefinition)) {
 					throw new BeanDefinitionStoreException("Cannot enhance @Configuration bean definition '" +
@@ -457,6 +467,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 				// Set enhanced subclass of the user-specified bean class
 				Class<?> configClass = beanDef.resolveBeanClass(this.beanClassLoader);
 				if (configClass != null) {
+					/**
+					 * 给ConfigurationClass创建Cglib代理对象
+					 */
 					Class<?> enhancedClass = enhancer.enhance(configClass, this.beanClassLoader);
 					if (configClass != enhancedClass) {
 						if (logger.isTraceEnabled()) {

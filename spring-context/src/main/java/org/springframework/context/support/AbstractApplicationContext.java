@@ -563,7 +563,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				 * 注意！！！
 				 * 重点关注！！！
 				 * 在AnnotationConfigApplicationContext中，有一个Spring定义的后置处理器ConfigurationClassPostProcessor,在此处实例化并执行！！！
-				 * ConfigurationClassPostProcessor用来进行包扫描，注册用户定义的Bean
+				 * ConfigurationClassPostProcessor的postProcessBeanDefnitionRegistrar方法用来进行包扫描，注册用户定义的Bean
+				 * ConfigurationClassPostProcessor的postProcessBeanFactory方法用来给@Configuration注解的Bean创建Cglib代理对象，并设置到其BeanDefinition的beanClass
 				 */
 				invokeBeanFactoryPostProcessors(beanFactory);
 

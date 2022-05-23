@@ -289,11 +289,23 @@ final class PostProcessorRegistrationDelegate {
 	public static void registerBeanPostProcessors(
 			ConfigurableListableBeanFactory beanFactory, AbstractApplicationContext applicationContext) {
 
+		/**
+		 * 从BeanDefinitionMap中获取BeanPostProcessor实现类
+		 * 此时可以获取到两个Spring定义的BeanPostProcessor实现类和用户定义的BeanPostProcessor实现类
+		 * Spring定义的BeanPostProcessor是在实例化上下文时，实例化AnnotatedBeanDefinitionReader时注册的
+		 * 分别是AutowiredAnnotationProcessor和CommonAnnotationProcessor
+		 */
 		String[] postProcessorNames = beanFactory.getBeanNamesForType(BeanPostProcessor.class, true, false);
 
 		// Register BeanPostProcessorChecker that logs an info message when
 		// a bean is created during BeanPostProcessor instantiation, i.e. when
 		// a bean is not eligible for getting processed by all BeanPostProcessors.
+		/**
+		 * 此时beanFactory.beanPostProcessors集合有三个实现类(直接实例化了，没有注册到容器中交由spring初始化)：
+		 * ApplicationContextAwareProcessor 在上下文执行refresh().prepareBeanFactory()添加的
+		 * ApplicationListenerDetector  在上下文执行refresh().prepareBeanFactory()添加的
+		 * ImportAwareBeanPostProcessor(ConfigurationClassPostProcessor的内部类)  在执行ConfigurationClassPostProcessor.PostProcessBeanFactory()方法是添加的
+		 */
 		int beanProcessorTargetCount = beanFactory.getBeanPostProcessorCount() + 1 + postProcessorNames.length;
 		beanFactory.addBeanPostProcessor(new BeanPostProcessorChecker(beanFactory, beanProcessorTargetCount));
 
