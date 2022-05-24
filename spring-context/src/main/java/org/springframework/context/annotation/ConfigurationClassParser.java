@@ -358,7 +358,7 @@ class ConfigurationClassParser {
 		 * 而是将@Import注解的bean、实现ImportSelector的bean作为ConfigurationClass，存放到解析器的ConfigurationClasses集合中
 		 *
 		 * ！！！实现ImportBeanDefinitionRegistrar的Bean处理方式又不同，
-		 * 而是将它放到使用@Import注解的bean转变的ConfigurationClass对象的importBeanDefinitionRegistrars集合中
+		 * 而是将它放到 使用@Import注解的bean 转变的ConfigurationClass对象的 importBeanDefinitionRegistrars集合中
 		 *
 		 */
 		processImports(configClass, sourceClass, getImports(sourceClass), true);
@@ -370,7 +370,7 @@ class ConfigurationClassParser {
 		 *
 		 * 因为看到ConfigurationClass对象中有ImportResources集合
 		 * 猜测 XMl配置文件托管Bean，也不会作为ConfigurationClass,
-		 * 而是存放到使用@ImportResource注解转变的ConfigurationClass的ImportResources集合中
+		 * 而是存放到 使用@ImportResource注解转变的 ConfigurationClass的ImportResources集合中
 		 */
 		AnnotationAttributes importResource =
 				AnnotationConfigUtils.attributesFor(sourceClass.getMetadata(), ImportResource.class);
@@ -387,7 +387,7 @@ class ConfigurationClassParser {
 		/**
 		 * 处理@Bean注解的方法输出的Bean
 		 *
-		 * 使用@Bean注解的方法输出的Bean，也不会作为ConfigurationClass，存放到解析器的ConfigurationClasses中
+		 * 使用@Bean注解的方法输出的Bean，也不会作为ConfigurationClass存放到解析器的ConfigurationClasses中
 		 * 而是存放到对应ConfigurationClass的BeanMethods集合中
 		 */
 		Set<MethodMetadata> beanMethods = retrieveBeanMethodMetadata(sourceClass);

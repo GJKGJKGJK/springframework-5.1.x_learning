@@ -379,11 +379,15 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			}
 			/**
 			 * configClasseses中包含了使用@Component注解的类，@Configuration注解的类，ImportSelector注册的类，@import注解导入的类
-			 * 但是使用@Component注解的类，@Configuration注解的Bean都已经注册了，不会重复注册
+			 * 但是使用@Component注解的类，@Configuration注解的Bean在解析时就已经注册了，不会重复注册
 			 *
 			 * 所以此处处理的是ImportSelector注册的类，@import注解导入的类对应的ConfigurationClass对象
 			 * 将ImportSelector注册的类，@import注解导入的类注册到容器中，
-			 * 同时将ImportBeanDefinitionRegistrar注册的类、使用@Bean方法注册的类、@ImportResource注解导入XML注册的Bean，注册到容器中！！！！
+			 *
+			 * 解析的过程中，我们发现ImportBeanDefinitionRegistrar注册的类、@Bean方法注册的类、@ImportResource导入xml注册的类 不会作为configClass，
+			 * 而是存放到ConfigClass内部的各个集合中。
+			 * 所以此处会从configClass的各个集合中获取Bean，
+			 * 将ImportBeanDefinitionRegistrar注册的类、使用@Bean方法注册的类、@ImportResource注解导入XML注册的Bean，注册到容器中！！！！
 			 */
 			this.reader.loadBeanDefinitions(configClasses);
 			//添加到已注册集合中

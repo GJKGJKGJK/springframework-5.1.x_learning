@@ -373,7 +373,9 @@ class ConfigurationClassEnhancer {
 			// This ensures that the semantics of calling a FactoryBean from within @Bean methods
 			// is the same as that of referring to a FactoryBean within XML. See SPR-6602.
 			/**
-			 * 当 容器中存在当前&BeanName 和 BeanName 并且不是当前正在创建的Bean 时处理
+			 * 判断当前BeanFactory中存在这个FactoryBean
+			 * FactoryBean的beanName都是带 & 符号的，用来区分普通bean还是factorybean
+			 * 如果是factorybean，则对这个factoryBean再做一层代理
 			 *
 			 */
 			if (factoryContainsBean(beanFactory, BeanFactory.FACTORY_BEAN_PREFIX + beanName) &&
