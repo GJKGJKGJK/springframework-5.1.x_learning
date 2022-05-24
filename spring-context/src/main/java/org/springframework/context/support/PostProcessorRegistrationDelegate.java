@@ -292,7 +292,7 @@ final class PostProcessorRegistrationDelegate {
 		/**
 		 * 从BeanDefinitionMap中获取BeanPostProcessor实现类
 		 * 此时可以获取到两个Spring定义的BeanPostProcessor实现类和用户定义的BeanPostProcessor实现类
-		 * Spring定义的BeanPostProcessor是在实例化上下文时，实例化AnnotatedBeanDefinitionReader时注册的
+		 * Spring定义的BeanPostProcessor是在实例化上下文-->实例化AnnotatedBeanDefinitionReader时注册的
 		 * 分别是AutowiredAnnotationProcessor和CommonAnnotationProcessor
 		 */
 		String[] postProcessorNames = beanFactory.getBeanNamesForType(BeanPostProcessor.class, true, false);
@@ -307,14 +307,30 @@ final class PostProcessorRegistrationDelegate {
 		 * ImportAwareBeanPostProcessor(ConfigurationClassPostProcessor的内部类)  在执行ConfigurationClassPostProcessor.PostProcessBeanFactory()方法是添加的
 		 */
 		int beanProcessorTargetCount = beanFactory.getBeanPostProcessorCount() + 1 + postProcessorNames.length;
+		/**
+		 * 向BeanFactory的BeanPostProcessor集合添加BeanPostProcessorChecker(主要用于记录信息)
+		 */
 		beanFactory.addBeanPostProcessor(new BeanPostProcessorChecker(beanFactory, beanProcessorTargetCount));
 
 		// Separate between BeanPostProcessors that implement PriorityOrdered,
 		// Ordered, and the rest.
+		//存放实现PriorityOrdered接口的BeanPostProcessor
 		List<BeanPostProcessor> priorityOrderedPostProcessors = new ArrayList<>();
+		//存放实现MergedBeanDefinitionPostProcessor接口的BeanPostProcessor
 		List<BeanPostProcessor> internalPostProcessors = new ArrayList<>();
+		//存放实现Ordered接口的BeanPostProcessor
 		List<String> orderedPostProcessorNames = new ArrayList<>();
+		//没有实现排序接口的BeanPostProcessor
 		List<String> nonOrderedPostProcessorNames = new ArrayList<>();
+
+		/**
+		 * 优先处理实现PriorityOrdered接口的BeanPostProcessor
+		 * 先实例化创建Bean对象
+		 * 再添加到priorityOrderedPostProcessors集合中
+		 * 如果还是实现了MeredBeanDefinitionPostProcessor接口，还会在internalPostProcessors集合中添加一遍
+		 * 对priorityOrderedPostProcessors集合中的BeanProcessor排序
+		 * 将priorityOrderedPostProcessors集合中BeanProcessor添加到BeanFactory的beanpostprocessors集合中
+		 */
 		for (String ppName : postProcessorNames) {
 			if (beanFactory.isTypeMatch(ppName, PriorityOrdered.class)) {
 				BeanPostProcessor pp = beanFactory.getBean(ppName, BeanPostProcessor.class);
@@ -335,6 +351,14 @@ final class PostProcessorRegistrationDelegate {
 		sortPostProcessors(priorityOrderedPostProcessors, beanFactory);
 		registerBeanPostProcessors(beanFactory, priorityOrderedPostProcessors);
 
+		/**
+		 * 其次处理实现Ordered接口的BeanPostProcessor
+		 * 先实例化创建Bean对象
+		 * 再添加到orderedPostProcessors集合中
+		 * 如果还是实现了MeredBeanDefinitionPostProcessor接口，还会在internalPostProcessors集合中添加一遍
+		 * 对orderedPostProcessors集合中的BeanProcessor排序
+		 * 将orderedPostProcessors集合中BeanProcessor添加到BeanFactory的beanPostProcessors集合中
+		 */
 		// Next, register the BeanPostProcessors that implement Ordered.
 		List<BeanPostProcessor> orderedPostProcessors = new ArrayList<>();
 		for (String ppName : orderedPostProcessorNames) {
@@ -348,6 +372,14 @@ final class PostProcessorRegistrationDelegate {
 		registerBeanPostProcessors(beanFactory, orderedPostProcessors);
 
 		// Now, register all regular BeanPostProcessors.
+		/**
+		 * 接着处理没有实现排序接口的BeanPostProcessor
+		 * 先实例化创建Bean对象
+		 * 再添加到nonOrderedPostProcessors集合中
+		 * 如果还是实现了MeredBeanDefinitionPostProcessor接口，还会在internalPostProcessors集合中添加一遍
+		 * 对nonOrderedPostProcessors集合中的BeanProcessor排序
+		 * 将nonOrderedPostProcessors集合中BeanProcessor添加到BeanFactory的beanPostProcessors集合中
+		 */
 		List<BeanPostProcessor> nonOrderedPostProcessors = new ArrayList<>();
 		for (String ppName : nonOrderedPostProcessorNames) {
 			BeanPostProcessor pp = beanFactory.getBean(ppName, BeanPostProcessor.class);
@@ -359,6 +391,11 @@ final class PostProcessorRegistrationDelegate {
 		registerBeanPostProcessors(beanFactory, nonOrderedPostProcessors);
 
 		// Finally, re-register all internal BeanPostProcessors.
+		/**
+		 * 最后将internalPostProcessors集合中的BeanPostProcessor在添加到BeanFactory的beanPostProcessors集合中
+		 * 此处的BeanPostProcessor不需要实例化，因为前面的处理已经实例化了
+		 * 这边处理的目的就是将实现MeredBeanDefinitionPostProcessor接口的BeanPostProcessor放到最后
+		 */
 		sortPostProcessors(internalPostProcessors, beanFactory);
 		registerBeanPostProcessors(beanFactory, internalPostProcessors);
 
