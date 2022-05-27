@@ -292,6 +292,7 @@ final class PostProcessorRegistrationDelegate {
 		/**
 		 * 从BeanDefinitionMap中获取BeanPostProcessor实现类
 		 * 此时可以获取到两个Spring定义的BeanPostProcessor实现类和用户定义的BeanPostProcessor实现类
+		 *
 		 * Spring定义的BeanPostProcessor是在实例化上下文-->实例化AnnotatedBeanDefinitionReader时注册的
 		 * 分别是AutowiredAnnotationProcessor和CommonAnnotationProcessor
 		 */
