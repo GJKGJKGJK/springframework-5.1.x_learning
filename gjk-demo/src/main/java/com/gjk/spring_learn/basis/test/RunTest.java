@@ -5,11 +5,14 @@ import java.util.Locale;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 import com.gjk.spring_learn.basis.applicationEvent.event.MyApplicationEvent;
 import com.gjk.spring_learn.basis.beanDefinitionRegistryPostProcessor.MyBDRegistryPostProcessor2;
 import com.gjk.spring_learn.basis.beanFactoryPostProcessors.MyBeanFactoryPostProcessor2;
 import com.gjk.spring_learn.basis.beanFactoryPostProcessors.MyBeanFactoryPostProcessor3;
+import com.gjk.spring_learn.basis.importAware.ImportArgs;
+import com.gjk.spring_learn.basis.importAware.MyImportAware;
 import com.gjk.spring_learn.basis.service.StudentServiceImpl;
 
 /**
@@ -20,6 +23,7 @@ import com.gjk.spring_learn.basis.service.StudentServiceImpl;
  * @description:
  */
 @ComponentScan("com.gjk.spring_learn.basis")
+@ImportArgs(name = "GJK",age = 24)
 public class RunTest {
 
 	public static void main(String[] args) {
@@ -27,11 +31,13 @@ public class RunTest {
 		context.register(RunTest.class);
 
 		//可以在refresh之前向上下文中添加BeanFactoryPostProcessor
-		context.addBeanFactoryPostProcessor(new MyBDRegistryPostProcessor2());
-		context.addBeanFactoryPostProcessor(new MyBeanFactoryPostProcessor2());
-		context.addBeanFactoryPostProcessor(new MyBeanFactoryPostProcessor3());
+//		context.addBeanFactoryPostProcessor(new MyBDRegistryPostProcessor2());
+//		context.addBeanFactoryPostProcessor(new MyBeanFactoryPostProcessor2());
+//		context.addBeanFactoryPostProcessor(new MyBeanFactoryPostProcessor3());
 		context.refresh();
 
+//		MyImportAware bean = context.getBean(MyImportAware.class);
+//		bean.print();
 
 		MyApplicationEvent event = new MyApplicationEvent(context, "GGGGBBB");
 		context.publishEvent(event);

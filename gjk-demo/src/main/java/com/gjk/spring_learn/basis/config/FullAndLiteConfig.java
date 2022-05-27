@@ -48,7 +48,7 @@ import org.springframework.stereotype.Component;
  * @description:
  */
 //@Configuration
-@Component
+//@Component
 public class FullAndLiteConfig {
 
 

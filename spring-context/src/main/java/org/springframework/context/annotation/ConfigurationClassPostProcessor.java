@@ -386,7 +386,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			 *
 			 * 解析的过程中，我们发现ImportBeanDefinitionRegistrar注册的类、@Bean方法注册的类、@ImportResource导入xml注册的类 不会作为configClass，
 			 * 而是存放到ConfigClass内部的各个集合中。
-			 * 所以此处会从configClass的各个集合中获取Bean，
+			 * 所以此处会从configClass的各个集合中获取BeanDefinition，
 			 * 将ImportBeanDefinitionRegistrar注册的类、使用@Bean方法注册的类、@ImportResource注解导入XML注册的Bean，注册到容器中！！！！
 			 */
 			this.reader.loadBeanDefinitions(configClasses);
@@ -497,6 +497,11 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	}
 
 
+	/**
+	 * Spring的后置处理器之一
+	 *
+	 * 用来处理实现ImportAware接口的实现类，通过注解给配置赋值功能
+	 */
 	private static class ImportAwareBeanPostProcessor extends InstantiationAwareBeanPostProcessorAdapter {
 
 		private final BeanFactory beanFactory;
@@ -518,7 +523,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		@Override
 		public Object postProcessBeforeInitialization(Object bean, String beanName) {
 			if (bean instanceof ImportAware) {
-				ImportRegistry ir = this.beanFactory.getBean(IMPORT_REGISTRY_BEAN_NAME, ImportRegistry.class);
+ 				ImportRegistry ir = this.beanFactory.getBean(IMPORT_REGISTRY_BEAN_NAME, ImportRegistry.class);
 				AnnotationMetadata importingClass = ir.getImportingClassFor(bean.getClass().getSuperclass().getName());
 				if (importingClass != null) {
 					((ImportAware) bean).setImportMetadata(importingClass);

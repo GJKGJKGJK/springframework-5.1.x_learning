@@ -35,6 +35,15 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.StringValueResolver;
 
 /**
+ * Spring的后置处理器之一
+ *
+ * 用来处理EnvironmentAware、EmbeddedValueResolverAware、ResourceLoaderAware、
+ * ApplicationEventPublisherAware、MessageSourceAware、ApplicationContextAware这些接口的实现类
+ *
+ * 如果实现上述的接口，Spring则将自动为实现类设置相关属性！
+ * ApplicationContextAware是我们最常用的Aware接口！
+ *
+ *
  * {@link org.springframework.beans.factory.config.BeanPostProcessor}
  * implementation that passes the ApplicationContext to beans that
  * implement the {@link EnvironmentAware}, {@link EmbeddedValueResolverAware},

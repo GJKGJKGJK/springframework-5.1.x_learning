@@ -20,6 +20,13 @@ import org.springframework.beans.factory.Aware;
 import org.springframework.core.type.AnnotationMetadata;
 
 /**
+ * 通过@import+importAware接口的方式，可以实现通过注解设置程序的配置值
+ * importAware必须使用@Configuration注解
+ *
+ * Spring会在初试化的时候调用ImportAwareBeanPostProcessor后置处理器的postProcessBeforeInitialization()方法
+ * 用来处理实现ImportAware接口的实现类，给属性赋值
+ *
+ *
  * Interface to be implemented by any @{@link Configuration} class that wishes
  * to be injected with the {@link AnnotationMetadata} of the @{@code Configuration}
  * class that imported it. Useful in conjunction with annotations that

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
  * @date: 2022/5/16 14:07
  * @description:
  */
-@Component
+//@Component
 public class MyBeanPostProcessor2 implements BeanPostProcessor, PriorityOrdered {
 
 	@Override

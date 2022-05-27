@@ -360,7 +360,7 @@ final class PostProcessorRegistrationDelegate {
 		 * 对orderedPostProcessors集合中的BeanProcessor排序
 		 * 将orderedPostProcessors集合中BeanProcessor添加到BeanFactory的beanPostProcessors集合中
 		 */
-		// Next, register the BeanPostProcessors that implement Ordered.
+		// Next, register the BeanPostProcessors that implement Ordered		.
 		List<BeanPostProcessor> orderedPostProcessors = new ArrayList<>();
 		for (String ppName : orderedPostProcessorNames) {
 			BeanPostProcessor pp = beanFactory.getBean(ppName, BeanPostProcessor.class);
@@ -452,6 +452,9 @@ final class PostProcessorRegistrationDelegate {
 
 
 	/**
+	 * Spring的后置处理器之一
+	 * 用来检查是否所有后置处理器都已执行，如果没有执行则报错
+	 *
 	 * BeanPostProcessor that logs an info message when a bean is created during
 	 * BeanPostProcessor instantiation, i.e. when a bean is not eligible for
 	 * getting processed by all BeanPostProcessors.

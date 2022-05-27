@@ -575,8 +575,12 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				 * 分别是：ApplicationContextAwareProcessor、ApplciationListenerDetector
 				 * 还有一个是在ConfigurationClassPostProcessor#postProcessBeanFactory方法的结尾处添加的ImportAwareBeanPostProcessor
 				 *
+   				 * 当我们使用@EnableAspectJAutoProxy注解时，Spring会通过@Import+importBeanDefinitionRegistrar接口的方式
+  				 * 向容器中添加AnnotationAwareAspectJAutoProxy后置处理器的BeanDefinition
+				 *
 				 * 从BeanDefnitionMap中获取Spring定义的和用户定义的BeanPostProcessor并实例化，然后一定的顺序添加到BeanFactory的beanPostProcessor集合中
 				 * 此处并不会执行BeanPostProcessorde的接口方法，只是实例化并收集起来
+				 *
 				 */
  				registerBeanPostProcessors(beanFactory);
 
@@ -609,7 +613,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 				// Check for listener beans and register them.
 				/**
-				 *
+				 * 向事件广播器中注册用户手动添加的和交由Spring托管的事件监听器
 				 */
 				registerListeners();
 
@@ -970,7 +974,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		// Do not initialize FactoryBeans here: We need to leave all regular beans
 		// uninitialized to let post-processors apply to them!
 		/**
-		 * 此处处理的是BeanDefinitionMap中的时间监听器
+		 * 此处处理的是BeanDefinitionMap中的事件监听器
 		 * 将获取到的监听器添加到 initApplicationEventMulticaster()方法实例化的事件发布者 的监听器集合
 		 */
 		String[] listenerBeanNames = getBeanNamesForType(ApplicationListener.class, true, false);
@@ -1017,6 +1021,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.setTempClassLoader(null);
 
 		// Allow for caching all bean definition metadata, not expecting further changes.
+		/**
+		 * 冻结BeanDefinition,表示BeanDefinition不会被修改
+		 */
 		beanFactory.freezeConfiguration();
 
 		// Instantiate all remaining (non-lazy-init) singletons.

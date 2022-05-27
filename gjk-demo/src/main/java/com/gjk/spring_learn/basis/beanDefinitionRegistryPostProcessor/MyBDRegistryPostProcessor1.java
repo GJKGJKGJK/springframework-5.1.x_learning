@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
  * @date: 2022/5/19 22:22
  * @description:
  */
-@Component
+//@Component
 public class MyBDRegistryPostProcessor1 implements BeanDefinitionRegistryPostProcessor {
 	@Override
 	public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
