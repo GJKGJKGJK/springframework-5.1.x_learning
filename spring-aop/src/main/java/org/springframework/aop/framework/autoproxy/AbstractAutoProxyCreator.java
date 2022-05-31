@@ -296,6 +296,9 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		if (bean != null) {
 			Object cacheKey = getCacheKey(bean.getClass(), beanName);
 			if (this.earlyProxyReferences.remove(cacheKey) != bean) {
+				/**
+				 * 创建代理对象
+				 */
 				return wrapIfNecessary(bean, beanName, cacheKey);
 			}
 		}
@@ -344,6 +347,9 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 		}
 
 		// Create proxy if we have advice.
+		/**
+		 * Spring获取所有切面
+		 */
 		Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, null);
 		if (specificInterceptors != DO_NOT_PROXY) {
 			this.advisedBeans.put(cacheKey, Boolean.TRUE);
@@ -458,6 +464,9 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			}
 		}
 
+		/**
+		 * 将切面设置到proxyFactory代理工厂中
+		 */
 		Advisor[] advisors = buildAdvisors(beanName, specificInterceptors);
 		proxyFactory.addAdvisors(advisors);
 		proxyFactory.setTargetSource(targetSource);
@@ -468,6 +477,9 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			proxyFactory.setPreFiltered(true);
 		}
 
+		/**
+		 * proxyFactory代理工程创建代理对象
+		 */
 		return proxyFactory.getProxy(getProxyClassLoader());
 	}
 

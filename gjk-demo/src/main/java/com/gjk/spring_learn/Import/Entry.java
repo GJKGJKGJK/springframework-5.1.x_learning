@@ -8,6 +8,9 @@ import com.gjk.spring_learn.Import.service.UserService;
 /**
  * Entry
  *
+ * 测试ImprotSelector、ImportBeanDefinitionRegistrar两个扩展点
+ *
+ *
  * 入口
  *
  * @author: GJK

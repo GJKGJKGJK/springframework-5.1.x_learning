@@ -864,7 +864,10 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		 */
 		for (String beanName : beanNames) {
 			/**
-			 * 合并父类的BeanDefinition
+			 * 合并父BeanDefinition
+			 * 可以参考com.gjk.spring_learn.basis.test.RunTest中的《测试BeanFactory的getMergedLocalBeanDefinition()方法的作用》
+			 *
+			 * 应用较少，了解一下
 			 */
 			RootBeanDefinition bd = getMergedLocalBeanDefinition(beanName);
 			if (!bd.isAbstract() && bd.isSingleton() && !bd.isLazyInit()) {
