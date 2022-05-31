@@ -577,6 +577,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				 *
    				 * 当我们使用@EnableAspectJAutoProxy注解时，Spring会通过@Import+importBeanDefinitionRegistrar接口的方式
   				 * 向容器中添加AnnotationAwareAspectJAutoProxy后置处理器的BeanDefinition
+				 * 所以AOP的核心类AnnotationAwareAspectJAutoProxy在此处也实例化，然后存放到BeanFactory的集合内
 				 *
 				 * 从BeanDefnitionMap中获取Spring定义的和用户定义的BeanPostProcessor并实例化，然后一定的顺序添加到BeanFactory的beanPostProcessor集合中
 				 * 此处并不会执行BeanPostProcessorde的接口方法，只是实例化并收集起来
@@ -606,8 +607,6 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				/**
 				 * AbstractApplicationContext接口提供给子类的扩展方法
 				 * 目前此处的钩子方法没有任何实现，不做任何处理
-				 *
-				 * 由方法的所在位置，我们可以判断子类可以重写这个方法，在用户定义的Bean实例化之前，对上下文进行操作
 				 */
 				onRefresh();
 
@@ -998,6 +997,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	protected void finishBeanFactoryInitialization(ConfigurableListableBeanFactory beanFactory) {
 		// Initialize conversion service for this context.
+		/**
+		 * 初始化BeanFactory中的类型转换服务属性
+		 * 如果BeanFactory中没有类型转换服务的Bean，则向容器中实例化一个默认的类型转换服务的Bean
+		 * 然后在设置到BeanFactory的conversionService属性中
+		 */
 		if (beanFactory.containsBean(CONVERSION_SERVICE_BEAN_NAME) &&
 				beanFactory.isTypeMatch(CONVERSION_SERVICE_BEAN_NAME, ConversionService.class)) {
 			beanFactory.setConversionService(
@@ -1007,17 +1011,27 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		// Register a default embedded value resolver if no bean post-processor
 		// (such as a PropertyPlaceholderConfigurer bean) registered any before:
 		// at this point, primarily for resolution in annotation attribute values.
+		/**
+		 * 判断BeanFactory中embeddedValueResolvers集合是否存在注释值解析器
+		 * 如果没有，则注册一个默认的
+		 */
 		if (!beanFactory.hasEmbeddedValueResolver()) {
 			beanFactory.addEmbeddedValueResolver(strVal -> getEnvironment().resolvePlaceholders(strVal));
 		}
 
 		// Initialize LoadTimeWeaverAware beans early to allow for registering their transformers early.
+		/**
+		 * 处理AspectJ的静态织入
+		 */
 		String[] weaverAwareNames = beanFactory.getBeanNamesForType(LoadTimeWeaverAware.class, false, false);
 		for (String weaverAwareName : weaverAwareNames) {
 			getBean(weaverAwareName);
 		}
 
 		// Stop using the temporary ClassLoader for type matching.
+		/**
+		 * 将临时类加载器设置为空
+		 */
 		beanFactory.setTempClassLoader(null);
 
 		// Allow for caching all bean definition metadata, not expecting further changes.
@@ -1027,6 +1041,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.freezeConfiguration();
 
 		// Instantiate all remaining (non-lazy-init) singletons.
+		/**
+		 * 核心！！！实例化单例Bean
+		 */
 		beanFactory.preInstantiateSingletons();
 	}
 

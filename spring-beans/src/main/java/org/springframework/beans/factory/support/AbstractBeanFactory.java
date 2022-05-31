@@ -244,6 +244,12 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		Object bean;
 
 		// Eagerly check singleton cache for manually registered singletons.
+		/**
+		 * 从缓存中获取Bean，如果不是空，直接返回对象实例
+		 *
+		 * 在我们刚开始初始化时，除了BeanPostProcessor、BeanFactoryPostProcessor和Spring内部定义的Bean外,获取的Bean基本上都是空的
+		 * 所以这块代码一般也不会走
+		 */
 		Object sharedInstance = getSingleton(beanName);
 		if (sharedInstance != null && args == null) {
 			if (logger.isTraceEnabled()) {
@@ -255,17 +261,29 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					logger.trace("Returning cached instance of singleton bean '" + beanName + "'");
 				}
 			}
+			//返回对象实例
 			bean = getObjectForBeanInstance(sharedInstance, name, beanName, null);
 		}
 
 		else {
 			// Fail if we're already creating this bean instance:
 			// We're assumably within a circular reference.
+			/**
+			 * 如果bean已经在创建了，会抛出异常
+			 * 这种场景一般只有原型的Bean才会出现这样的问题
+			 * 单例Bean的创建过程中，不会走这块代码
+			 */
 			if (isPrototypeCurrentlyInCreation(beanName)) {
 				throw new BeanCurrentlyInCreationException(beanName);
 			}
 
 			// Check if bean definition exists in this factory.
+			/**
+			 * 当父BeanFactory不等于空，且当前的BeanFactory中不包含这个Bean
+			 * 那么由父BeanFactory去实例化Bean
+			 *
+			 * 一般情况下，不会存在父BeanFactory,所以此块代码也不会走
+			 */
 			BeanFactory parentBeanFactory = getParentBeanFactory();
 			if (parentBeanFactory != null && !containsBeanDefinition(beanName)) {
 				// Not found -> check parent.
@@ -287,6 +305,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 			}
 
+			/**
+			 * 类型检查
+			 */
 			if (!typeCheckOnly) {
 				markBeanAsCreated(beanName);
 			}
@@ -294,7 +315,13 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			try {
 				RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
 				checkMergedBeanDefinition(mbd, beanName, args);
-
+				/**
+				 * 这块代码是处理DependsOn注解的
+				 * 优先实例化当前Bean依赖的Bean
+				 *
+				 * 首先要了解depends-on或@DependsOn作用，是用来表示一个bean A的实例化依赖另一个bean B的实例化，
+				 * 但是A并不需要持有一个B的对象，如果需要的话就不用depends-on，直接用依赖注入就可以了或者ref标签。
+				 */
 				// Guarantee initialization of beans that the current bean depends on.
 				String[] dependsOn = mbd.getDependsOn();
 				if (dependsOn != null) {

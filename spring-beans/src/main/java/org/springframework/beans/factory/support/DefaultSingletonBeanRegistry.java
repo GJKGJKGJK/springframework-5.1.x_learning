@@ -179,6 +179,11 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	@Nullable
 	protected Object getSingleton(String beanName, boolean allowEarlyReference) {
 		// Quick check for existing instance without full singleton lock
+		/**
+		 * 先从一级缓存singleObjects中获取对象实例
+		 * 如果为空且为当前正在创建的Bean，则再从二级缓存earlySingletons中获取对象实例
+		 * 如果二级缓存earlySingletons中仍然没有，则
+		 */
 		Object singletonObject = this.singletonObjects.get(beanName);
 		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
 			singletonObject = this.earlySingletonObjects.get(beanName);
@@ -214,6 +219,9 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	public Object getSingleton(String beanName, ObjectFactory<?> singletonFactory) {
 		Assert.notNull(beanName, "Bean name must not be null");
 		synchronized (this.singletonObjects) {
+			/**
+			 * 对于普通Bean还没有实例化，所以此处从缓存中获取Bean对象实例仍然是空
+			 */
 			Object singletonObject = this.singletonObjects.get(beanName);
 			if (singletonObject == null) {
 				if (this.singletonsCurrentlyInDestruction) {
@@ -231,6 +239,14 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					this.suppressedExceptions = new LinkedHashSet<>();
 				}
 				try {
+					/**
+					 * 在Debug时，发现当代码走到此处时，singletonObject终于不是null了
+					 * 说明Bean的对象实例，在此处创建的
+					 *
+					 * singletonFactory,即ObjectFactory是一个函数式接口
+					 * 所以我们想要看Bean创建过程，需要查看当前方法调用时的第二个参数的Lambda表达式
+					 * 重点关注org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory#createBean(String,RootBeanDefinition, Object[])
+					 */
 					singletonObject = singletonFactory.getObject();
 					newSingleton = true;
 				}
