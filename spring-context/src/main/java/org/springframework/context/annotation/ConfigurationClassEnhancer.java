@@ -150,7 +150,7 @@ class ConfigurationClassEnhancer {
 		/**
 		 * 给enhancer设置Spring定义的两个回调方法：
 		 * BeanMethodInterceptor: 拦截@Bean方法的调用，会从BeanFactory中获取实例返回，而不是通过@Bean方法返回
-		 * BeanFactoryAwareMethodInterceptor:当@Configuration注解类实现了BeanFactoryAware接口，调用setBeanfactory接口时，会将上下文中BeanFactory塞入
+		 * BeanFactoryAwareMethodInterceptor:当@Configuration注解类实现了BeanFactoryAware接口，调用setBeanfactory方法时，会将上下文中BeanFactory塞入
 		 */
 		enhancer.setCallbackFilter(CALLBACK_FILTER);
 		enhancer.setCallbackTypes(CALLBACK_FILTER.getCallbackTypes());

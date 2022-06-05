@@ -12,6 +12,7 @@ import com.gjk.spring_learn.basis.applicationEvent.event.MyApplicationEvent;
 import com.gjk.spring_learn.basis.beanDefinitionRegistryPostProcessor.MyBDRegistryPostProcessor2;
 import com.gjk.spring_learn.basis.beanFactoryPostProcessors.MyBeanFactoryPostProcessor2;
 import com.gjk.spring_learn.basis.beanFactoryPostProcessors.MyBeanFactoryPostProcessor3;
+import com.gjk.spring_learn.basis.factoryMethod.FactoryMethodTest1;
 import com.gjk.spring_learn.basis.importAware.ImportArgs;
 import com.gjk.spring_learn.basis.importAware.MyImportAware;
 import com.gjk.spring_learn.basis.mergedLocalBeanDefinition.Child;
@@ -26,8 +27,8 @@ import com.gjk.spring_learn.basis.service.StudentServiceImpl;
  * @description:
  */
 @ComponentScan("com.gjk.spring_learn.basis")
-@ImportArgs(name = "GJK",age = 24)
-@ImportResource("classpath:Spring.xml")
+//@ImportArgs(name = "GJK",age = 24)
+//@ImportResource("classpath:Spring.xml")
 public class RunTest {
 
 	public static void main(String[] args) {
@@ -78,10 +79,17 @@ public class RunTest {
 		/**
 		 * 测试执行初试化Bean时 BeanFactory的getMergedLocalBeanDefinition()方法的作用
 		 */
-		Parent parent = (Parent) context.getBean("parent");
-		System.out.println(parent.getName());
-		Parent child = (Parent) context.getBean("child");
-		System.out.println(child.getName());
+//		Parent parent = (Parent) context.getBean("parent");
+//		System.out.println(parent.getName());
+//		Parent child = (Parent) context.getBean("child");
+//		System.out.println(child.getName());
 
+
+		/**
+		 * 测试通过xml中的factory-method标签指定的方法创建bean实例
+		 *
+		 * 打印出来的结果是：com.gjk.spring_learn.basis.factoryMethod.FactoryMethodTest2@cad498c
+		 */
+//		System.out.println(context.getBean("factoryMethodTest1"));
 	}
 }

@@ -179,10 +179,19 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	@Nullable
 	protected Object getSingleton(String beanName, boolean allowEarlyReference) {
 		// Quick check for existing instance without full singleton lock
+
 		/**
-		 * 先从一级缓存singleObjects中获取对象实例
-		 * 如果为空且为当前正在创建的Bean，则再从二级缓存earlySingletons中获取对象实例
-		 * 如果二级缓存earlySingletons中仍然没有，则
+		 * 在第一次调用这个getSingleton时 singletonObjects集合必定是空，并且isSingletonCurrentlyInCreation()方法也必定返回false
+		 *
+		 * 因为第一次调用时，我们还没有实例化，所以singleObjects不会存在beanName这个bean
+		 *
+		 * 而且singletonsCurrentlyInCreation(当前正在创建的单例Bean的beanName集合)也没用插入beanName，
+		 * Spring是在一系列的检查后，直到执行到下面的getSingleton的beforeSingletonCreation代码时，才认为当前BeanName才是正在创建的Bean
+		 * @see org.springframework.beans.factory.support.DefaultSingletonBeanRegistry#beforeSingletonCreation(String)
+		 *
+		 *
+		 * 由此可见当前这个getSingleton方法的作用是：
+		 * 当我们在程序中通过BeanFactory.getBean()时，获取对象
 		 */
 		Object singletonObject = this.singletonObjects.get(beanName);
 		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
@@ -217,6 +226,12 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 * @return the registered singleton object
 	 */
 	public Object  getSingleton(String beanName, ObjectFactory<?> singletonFactory) {
+		/**
+		 * Spring在做了一系列验证检查后，调用当前这个getSingleton从缓存中获取对象，如果为空则创建对象
+		 *
+		 * 由此可见，当前这个getSingleton的作用是：
+		 * 当我们初始化Bean时，调用这个getSingleton去创建Bean
+		 */
 		Assert.notNull(beanName, "Bean name must not be null");
 		synchronized (this.singletonObjects) {
 			/**
@@ -232,7 +247,14 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 				if (logger.isDebugEnabled()) {
 					logger.debug("Creating shared instance of singleton bean '" + beanName + "'");
 				}
+
+				/**
+				 * 到此，Spring认为当前的Bean可以开始创建了，然后将当前beanName设置到singletonsCurrentlyInCreation(当前正在创建的单例Bean的beanName集合)
+				 * 表示当前beanName对应的bean正在创建中
+				 */
 				beforeSingletonCreation(beanName);
+
+
 				boolean newSingleton = false;
 				boolean recordSuppressedExceptions = (this.suppressedExceptions == null);
 				if (recordSuppressedExceptions) {

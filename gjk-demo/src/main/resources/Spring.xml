@@ -10,4 +10,8 @@
 	<bean id="child" parent="parent">
 		<property name="name" value="childName"/>
 	</bean>
+
+	<bean id="factoryMethodTest1" class="com.gjk.spring_learn.basis.factoryMethod.FactoryMethodTest1" factory-method="getFactoryMethodTest2">
+
+	</bean>
 </beans>

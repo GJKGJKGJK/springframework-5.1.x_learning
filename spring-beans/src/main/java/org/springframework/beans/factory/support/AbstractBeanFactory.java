@@ -240,12 +240,23 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			String name, @Nullable Class<T> requiredType, @Nullable Object[] args, boolean typeCheckOnly)
 			throws BeansException {
 
+
+		/**
+		 * 通过name参数获取beanName
+		 * 这里为什么不直接使用name呢？
+		 * 1、name可能是以&符号开头的，表明调用者想获取FactoryBean本身
+		 * 2、可能存在别名问题，转换需要
+		 */
 		String beanName = transformedBeanName(name);
 		Object bean;
 
 		// Eagerly check singleton cache for manually registered singletons.
 		/**
-		 * 从缓存中获取Bean，如果不是空，直接返回对象实例
+		 * 从缓存中获取Bean
+		 *
+		 * 很矛盾，我们还没有实例化，为什么先从缓存里获取一下???
+		 * 因为这个方法不仅仅在初试化的时候调用，在getBean时也会调用。
+		 * 初试化时的调用肯定为空，但是getBean不一定为空。
 		 *
 		 * 在我们刚开始初始化时，除了BeanPostProcessor、BeanFactoryPostProcessor和Spring内部定义的Bean外,获取的Bean基本上都是空的
 		 * 所以这块代码一般也不会走
@@ -306,7 +317,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			}
 
 			/**
-			 * 类型检查
+			 * 这块处理是 BeanFactory中的alreadyCreated集合中是否存在当前这个BeanName
+			 * 如果没有则向alreadyCreated集合中添加这个beanName
+			 *
+			 * alreadyCreated集合:用来收集已经创建过的beanName,防止重复创建
 			 */
 			if (!typeCheckOnly) {
 				markBeanAsCreated(beanName);
@@ -342,9 +356,13 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 
 				// Create bean instance.
+				/**
+				 * 创建单例Bean，核心方法是creatBean！！！！
+				 */
 				if (mbd.isSingleton()) {
 					sharedInstance = getSingleton(beanName, () -> {
 						try {
+							//创建Bean
 							return createBean(beanName, mbd, args);
 						}
 						catch (BeansException ex) {
