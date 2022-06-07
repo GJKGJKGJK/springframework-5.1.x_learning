@@ -587,6 +587,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 		if (instanceWrapper == null) {
 			/**
+			 * 初始化实例对象的核心代码！！！
+			 *
 			 * 到此处instanceWrapper Bean的包装对象已经创建
 			 * 这代表着我们真实的Bean也已经创建
 			 * 并且通过getWrappedInstance()获取到了真实的Bean
@@ -1262,23 +1264,38 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		// Candidate constructors for autowiring?
 		/**
-		 * 通过SmartInstantiationAwareBeanPostProcessor后置处理器获取有参构造方法
-		 * 1、当存在无参构造方法时，此处获取不到任何有参构造方法，所以是null
+		 * 通过SmartInstantiationAwareBeanPostProcessor的实现类AutoWiredAnnotationBeanPostProcessor后置处理器determineCandidateConstructors()方法的获取有参构造方法
+		 * 1、当存在无参构造方法时，此处返回的构造方法数组是null
 		 * 2、当不存在无参构造方法时，此处获取所有有参构造方法
+		 *
+		 * 当同时存在无参构造方法和有参构造方法，Spring无法确定需要使用什么构造方法实例化对象
+		 * 所以AutoWiredAnnotationBeanPostProcessor#determineCandidateConstructors()直接返回null,然后Spring直接通过无参构造方法实例化
+		 * 当只存在有参构造方法时，待补充
+		 *
+		 *
+		 * mbd.getResolvedAutowireMode()获取自动装配模型，此时值必定是0(默认值)
+		 * Spring支持的自动装配模型：
+		 * 1、AUTOWIRE_NO：不进行自动装配
+		 * 2、AUTOWIRE_BY_NAME：通过name自动装配
+		 * 3、AUTOWIRE_BY_TYPE：通过类型自动装配
+		 * 4、AUTOWIRE_CONSTRUCTOR：通过构造方法自动装配
 		 */
 		Constructor<?>[] ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName);
+		//使用有参构造方法实例化
 		if (ctors != null || mbd.getResolvedAutowireMode() == AUTOWIRE_CONSTRUCTOR ||
 				mbd.hasConstructorArgumentValues() || !ObjectUtils.isEmpty(args)) {
 			return autowireConstructor(beanName, mbd, ctors, args);
 		}
 
 		// Preferred constructors for default construction?
+		//使用primaryConstructor 首选构造方法(通过后置处理器设置到bd中的构造方法)初始化实例化
 		ctors = mbd.getPreferredConstructors();
 		if (ctors != null) {
 			return autowireConstructor(beanName, mbd, ctors, null);
 		}
 
 		// No special handling: simply use no-arg constructor.
+		//使用无参构造方法实例化
 		return instantiateBean(beanName, mbd);
 	}
 
@@ -1376,8 +1393,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 						getAccessControlContext());
 			}
 			else {
+				/**
+				 * getInstantiationStrategy()获取初始化策略
+				 * 默认情况下获取一个反射的实例化策略
+				 * 通过反射实例化bean
+				 */
 				beanInstance = getInstantiationStrategy().instantiate(mbd, beanName, this);
 			}
+			//封装成BeanWrapper返回
 			BeanWrapper bw = new BeanWrapperImpl(beanInstance);
 			initBeanWrapper(bw);
 			return bw;

@@ -57,12 +57,26 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 	}
 
 
+	public SimpleInstantiationStrategy() {
+	}
+
 	@Override
 	public Object instantiate(RootBeanDefinition bd, @Nullable String beanName, BeanFactory owner) {
 		// Don't override the class with CGLIB if no overrides.
+		/**
+		 * 是否存在@lookup / @replace 注解的方法
+		 * 其实是为了判断当前生成Bean是否需要cglib代理增强
+		 *
+		 * 和ConfigurationClassPostProcessor#postProcessBeanFactory增强Configuration类同理
+		 */
 		if (!bd.hasMethodOverrides()) {
 			Constructor<?> constructorToUse;
 			synchronized (bd.constructorArgumentLock) {
+				/**
+				 * 获取bd中的用于初始化的构造方法或者工厂方法，一般都是为空
+				 * 通过class获取默认构造方法，再设置到bd的resolvedConstructorOrFactoryMethod属性中
+				 * 最后通过(Constructor.newInstance)反射创建对象
+				 */
 				constructorToUse = (Constructor<?>) bd.resolvedConstructorOrFactoryMethod;
 				if (constructorToUse == null) {
 					final Class<?> clazz = bd.getBeanClass();
@@ -75,6 +89,7 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 									(PrivilegedExceptionAction<Constructor<?>>) clazz::getDeclaredConstructor);
 						}
 						else {
+							//通过class获取默认构造方法，反射基础
 							constructorToUse = clazz.getDeclaredConstructor();
 						}
 						bd.resolvedConstructorOrFactoryMethod = constructorToUse;
@@ -84,10 +99,14 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 					}
 				}
 			}
+			//反射创建对象
 			return BeanUtils.instantiateClass(constructorToUse);
 		}
 		else {
 			// Must generate CGLIB subclass.
+			/**
+			 * 如果使用了@lookup / @replace 注解的方法，则创建增强代理类
+			 */
 			return instantiateWithMethodInjection(bd, beanName, owner);
 		}
 	}
