@@ -20,8 +20,6 @@ public class StudentServiceImpl implements IStudentService{
 
 	}
 
-	public StudentServiceImpl() {
-	}
 
 	@Autowired
 	private StudentDaoImpl studentDao;

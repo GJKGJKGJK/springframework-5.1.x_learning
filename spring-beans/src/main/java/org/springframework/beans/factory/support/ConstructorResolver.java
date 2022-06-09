@@ -120,14 +120,34 @@ class ConstructorResolver {
 		BeanWrapperImpl bw = new BeanWrapperImpl();
 		this.beanFactory.initBeanWrapper(bw);
 
+		//用来实例化的构造方法
 		Constructor<?> constructorToUse = null;
 		ArgumentsHolder argsHolderToUse = null;
+		//用来实例化的参数
 		Object[] argsToUse = null;
 
+		/**
+		 *  代表构造方法的参数
+		 * 判断是否传入构造参数值列表，初始化时getBean没有给参数所以argsToUse还是为空
+		 *
+		 * explicitArgs参数是在getBean方法中传入的参数
+		 * 如果我们主动调用getBean并且传入explicitArgs参数的话，Spring就会将我们传入的参数作为构造参数
+		 *
+		 * 如果explicitArgs是空的，Spring就尝试会从缓存中获取构造方法和构造参数，在第一次实例化对象，Spring会将构造方法和构造参数存放到缓存中
+		 */
 		if (explicitArgs != null) {
 			argsToUse = explicitArgs;
 		}
 		else {
+			/**
+			 *
+			 * 如果是单例bean，在第一次获取bean,resolvedConstructorOrFactoryMethod为空，第二次获取bean会直接从单例缓存中拿
+			 * 所以不管怎么样，单例Bean都不会走入此代码
+			 *
+			 * 如果是原型Bean，第一次获取Bean,resolvedConstructorOrFactoryMethod为空，但是实例化后会将使用的构造方法设置到缓存中，
+			 * 当第二次获取bean时，resolvedConstructorOrFactoryMethod不为空，进入此代码获取之前使用的构造方法和构造参数值列表
+			 *
+			 */
 			Object[] argsToResolve = null;
 			synchronized (mbd.constructorArgumentLock) {
 				constructorToUse = (Constructor<?>) mbd.resolvedConstructorOrFactoryMethod;
@@ -144,8 +164,20 @@ class ConstructorResolver {
 			}
 		}
 
+		/**
+		 * 经过上面的流程，构造方法和构造参数如果还是有一个为空，则Spring就开始推断、找出最合适的构造参数和构造方法了
+		 * 下面一整个if都是用来找出最合适的构造参数和构造方法
+		 */
 		if (constructorToUse == null || argsToUse == null) {
 			// Take specified constructors, if any.
+			/**
+			 * chosenCtors：在调用autowireConstructor方法时传入的构造方法数组
+			 * 如果传入的构造方法数组是空的，则根据bd对应class对象获取构造方法
+			 *
+			 * 如果允许访问非公共构造方法，返回全部访问权限的构造方法(public、protected、private、default)
+			 * 如果不允许方法非公共构造方法，则返回public权限的构造方法
+			 *
+			 */
 			Constructor<?>[] candidates = chosenCtors;
 			if (candidates == null) {
 				Class<?> beanClass = mbd.getBeanClass();
@@ -159,7 +191,17 @@ class ConstructorResolver {
 							"] from ClassLoader [" + beanClass.getClassLoader() + "] failed", ex);
 				}
 			}
+			/**
+			 * 经过以上步骤，Spring获取到可使用的构造方法数组
+			 */
 
+			/**
+			 * 此块代码的作用是在一定程度上加快autowireConstructor方法的执行
+			 *
+			 * 如果只有一个构造方法，同时这个构造方法不需要参数，并且在调用getBean方法时没有传入构造参数，
+			 * 这说明这个构造方法时默认构造方法，此时Spring不再去判断使用哪一个构造方法，而是直接采用这个默认构造方法完成对象的实例化
+			 * 同时将构造构造方法和构造参数存入缓存，以便下次需要实例化时，可以优先从缓存中获取构造参数和构造方法
+			 */
 			if (candidates.length == 1 && explicitArgs == null && !mbd.hasConstructorArgumentValues()) {
 				Constructor<?> uniqueCandidate = candidates[0];
 				if (uniqueCandidate.getParameterCount() == 0) {
@@ -174,9 +216,24 @@ class ConstructorResolver {
 			}
 
 			// Need to resolve the constructor.
+			/**
+			 * autowiring 自动装配标记位
+			 * 当我们传入的构造方法不为空,或者当前bd的自动装配模型是通过构造方法，
+			 * 则autowiring为true,表示自动装配
+			 */
 			boolean autowiring = (chosenCtors != null ||
 					mbd.getResolvedAutowireMode() == AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR);
 			ConstructorArgumentValues resolvedValues = null;
+
+			/**
+			 * minNrOfArgs最小参数个数，用来过滤构造方法的，当构造方法的参数数量小于miniNrofArgs时，直接忽略
+			 *
+			 * 当我们getBean传入的构造参数值不为空，将传入构造参数的个数设置到miniNrofArgs
+			 * 否则将miniNrofArgs设置为0
+			 * 为什么Spring要要将miniNrofArgs设置为0？
+			 * 因为Spring以及我们并没有通过 mbd.getConstructorArgumentValues().addArgumentValues()向bd中设置参数，
+			 * 所以此时bd中的构造方法参数为空，所以设置为0
+			 */
 
 			int minNrOfArgs;
 			if (explicitArgs != null) {
@@ -188,23 +245,54 @@ class ConstructorResolver {
 				minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues);
 			}
 
+			/**
+			 * 对获取到的构造参数进行排序
+			 * 排序规则：public > protected > default > private,并且同一访问权限的构造方法，参数越多越靠前
+			 * 当找到满足的pulic构造方法时，就不再考虑其他访问权限的构造方法
+			 *
+			 * minTypeDiffWeight：表示构造方法需要的参数和查找出来的参数差异大小，即差异量，Spring会获取差异量最小的构造方法创建对象。
+			 * eg: 有两个构造方法，一个参数类型是String,另一个参数类型是int。当查找出来的参数是String类型时，第一个构造方法的差异量自然消息第二个构造方法
+			 *
+			 * ambiguousConstructors 存放有歧义的构造方法，即两个构造器的差异量是相同的。
+			 * 当两个构造方法差异量相同时，Spring无法判断使用哪个构造方法初始化，将两个构造方法都存放到ambiguousConstructors
+			 *
+			 */
 			AutowireUtils.sortConstructors(candidates);
 			int minTypeDiffWeight = Integer.MAX_VALUE;
 			Set<Constructor<?>> ambiguousConstructors = null;
 			LinkedList<UnsatisfiedDependencyException> causes = null;
 
+			/**
+			 * 经过以上步骤，Spring完成了推断构造方法前的准备工作，接下来开始遍历一个个构造方法以及获取构造参数
+			 * 计算差异量，确定最合适的构造器
+			 */
+
+			/**
+			 * 遍历所有构造方法，确定constructorToUse和argsToUse。
+			 *
+			 *
+			 */
 			for (Constructor<?> candidate : candidates) {
 				Class<?>[] paramTypes = candidate.getParameterTypes();
 
+				//当constructorToUse不等于空，argsToUse不等于空，且argsToUse长度大于当前构造方法所需参数长度
+				//中断循环，说明找到合适的构造方法
 				if (constructorToUse != null && argsToUse != null && argsToUse.length > paramTypes.length) {
 					// Already found greedy constructor that can be satisfied ->
 					// do not look any further, there are only less greedy constructors left.
 					break;
 				}
+				//当前构造方法所需参数长度小于最小参数数量 跳出当前循环
 				if (paramTypes.length < minNrOfArgs) {
 					continue;
 				}
 
+				/**
+				 * 首先我们要理解resolvedValues和explicitArgs之间的关系
+				 * 当explicitArgs不为空时，Spring不会对resolvedValues赋值，只有当explicitArgs为空时，才会对resolvedValues赋值
+				 * 换句话说，这个if-else判断就是区分getBean时是否传入args情况
+				 * 如果传入了，则采用传入的构造参数创建参数对象数组argsHolder ，否则使用createArgumentArray方法创建参数对象数组argsHolder
+				 */
 				ArgumentsHolder argsHolder;
 				if (resolvedValues != null) {
 					try {
@@ -238,6 +326,15 @@ class ConstructorResolver {
 					argsHolder = new ArgumentsHolder(explicitArgs);
 				}
 
+				/**
+				 * 上面解析获取到参数对象数组，下面就是根据参数对象数组计算差异量。
+				 * 如果小于差异量，则本次循环的构造方法为更合适的构造方法，然后设置constructorToUse、argsHolderToUse、argsToUse
+				 * 同时更新minTypeDiffWeight，将ambiguousConstructors设置为空
+				 *
+				 * 前面的构造方法的差异量相同，会将这些构造方法放入歧义构造方法数组中
+				 * 如果本次的构造方法差异量小于最小差异量，说明本次构造方法更合适用来创建对象
+				 * 那么歧义的构造方法就没有存在的必要了
+				 */
 				int typeDiffWeight = (mbd.isLenientConstructorResolution() ?
 						argsHolder.getTypeDifferenceWeight(paramTypes) : argsHolder.getAssignabilityWeight(paramTypes));
 				// Choose this constructor if it represents the closest match.
@@ -257,6 +354,9 @@ class ConstructorResolver {
 				}
 			}
 
+			/**
+			 * 如果没有找到合适的构造器，则报错
+			 */
 			if (constructorToUse == null) {
 				if (causes != null) {
 					UnsatisfiedDependencyException ex = causes.removeLast();
@@ -269,6 +369,9 @@ class ConstructorResolver {
 						"Could not resolve matching constructor " +
 						"(hint: specify index/type/name arguments for simple parameters to avoid type ambiguities)");
 			}
+			/**
+			 * 如果找到有歧义的构造器，同时这个bean处于严格模式时，也会报错
+			 */
 			else if (ambiguousConstructors != null && !mbd.isLenientConstructorResolution()) {
 				throw new BeanCreationException(mbd.getResourceDescription(), beanName,
 						"Ambiguous constructor matches found in bean '" + beanName + "' " +
@@ -276,12 +379,19 @@ class ConstructorResolver {
 						ambiguousConstructors);
 			}
 
+			/**
+			 * 到此处，如果getBean时没有提供explicitArgs，而是通过Spring解析获取构造参数，
+			 * 那么Spring就会将此事的ConstructorToUse和ArgsToUse存放到缓存汇总
+			 */
 			if (explicitArgs == null && argsHolderToUse != null) {
 				argsHolderToUse.storeCache(mbd, constructorToUse);
 			}
 		}
 
 		Assert.state(argsToUse != null, "Unresolved constructor arguments");
+		/**
+		 * 最终找到合适的构造方法，通过反射创建对象
+		 */
 		bw.setBeanInstance(instantiate(beanName, mbd, constructorToUse, argsToUse));
 		return bw;
 	}
