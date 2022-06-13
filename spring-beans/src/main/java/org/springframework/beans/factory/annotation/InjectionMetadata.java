@@ -87,6 +87,9 @@ public class InjectionMetadata {
 				if (logger.isTraceEnabled()) {
 					logger.trace("Processing injected element of bean '" + beanName + "': " + element);
 				}
+				/**
+				 * 循环对创建的Bean的每个@Autowired、@Value注解的字段进行属性注入
+				 */
 				element.inject(target, beanName, pvs);
 			}
 		}

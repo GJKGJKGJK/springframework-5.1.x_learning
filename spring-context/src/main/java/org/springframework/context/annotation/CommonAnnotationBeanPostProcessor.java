@@ -298,8 +298,20 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
+		/**
+		 * 根据class对象解析获取@PostConstruct和@PreDestroy方法，封装成LifecycleMetadata
+		 * 并父类后置处理器InitDestroyAnnotationBeanPostProcessor的lifecycleMetadataCache缓存中
+		 * 同时将@PostConstruct和@PreDestroy方法与bd中的外部初始化方法集合和外部销毁方法集合 合并
+		 * 并存放到bd中
+		 */
 		super.postProcessMergedBeanDefinition(beanDefinition, beanType, beanName);
+		/**
+		 * 解析获取@Resource注解的成员变量的元数据，并放入缓存
+		 */
 		InjectionMetadata metadata = findResourceMetadata(beanName, beanType, null);
+		/**
+		 * 将上一步获取的@Resource注解的成员变量的元数据 同步到bd中
+		 */
 		metadata.checkConfigMembers(beanDefinition);
 	}
 
@@ -351,6 +363,9 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 					if (metadata != null) {
 						metadata.clear(pvs);
 					}
+					/**
+					 * 根据class解析获取@Resource注解的成员变量，封装成InjectionMetadata对象返回
+					 */
 					metadata = buildResourceMetadata(clazz);
 					this.injectionMetadataCache.put(cacheKey, metadata);
 				}

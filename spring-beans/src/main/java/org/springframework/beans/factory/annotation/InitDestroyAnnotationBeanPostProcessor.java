@@ -87,6 +87,9 @@ public class InitDestroyAnnotationBeanPostProcessor
 
 	private int order = Ordered.LOWEST_PRECEDENCE;
 
+	/**
+	 * 元数据的生命周期缓存
+	 */
 	@Nullable
 	private final transient Map<Class<?>, LifecycleMetadata> lifecycleMetadataCache = new ConcurrentHashMap<>(256);
 
@@ -125,14 +128,26 @@ public class InitDestroyAnnotationBeanPostProcessor
 
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
+		/**
+		 * 通过class解析获取@PostConstruct和@PreDestroy方法的元数据封装对象
+		 */
 		LifecycleMetadata metadata = findLifecycleMetadata(beanType);
+		/**
+		 * 将上一步获取的初始化方法和销毁方法，合并放入bd的缓存中
+		 */
 		metadata.checkConfigMembers(beanDefinition);
 	}
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+		/**
+		 * 获取@PostConstruct和@PreDestro注解的方法的元数据
+		 */
 		LifecycleMetadata metadata = findLifecycleMetadata(bean.getClass());
 		try {
+			/**
+			 * 通过反射调用初始化方法
+			 */
 			metadata.invokeInitMethods(bean, beanName);
 		}
 		catch (InvocationTargetException ex) {
@@ -186,6 +201,11 @@ public class InitDestroyAnnotationBeanPostProcessor
 			synchronized (this.lifecycleMetadataCache) {
 				metadata = this.lifecycleMetadataCache.get(clazz);
 				if (metadata == null) {
+					/**
+					 * 解析class对象中的@PostConstruct方法和@@PreDestroy方法的元数据，并封装成LifecycleMetadata生命周期的元数据对象
+					 *
+					 * 存入lifecycleMetadataCache生命周期的元数据缓存中
+					 */
 					metadata = buildLifecycleMetadata(clazz);
 					this.lifecycleMetadataCache.put(clazz, metadata);
 				}
@@ -196,15 +216,25 @@ public class InitDestroyAnnotationBeanPostProcessor
 	}
 
 	private LifecycleMetadata buildLifecycleMetadata(final Class<?> clazz) {
+		//总的初始化方法集合
 		List<LifecycleElement> initMethods = new ArrayList<>();
+		//总的销毁方法集合
 		List<LifecycleElement> destroyMethods = new ArrayList<>();
 		Class<?> targetClass = clazz;
 
 		do {
+			//当前class的初始化方法集合
 			final List<LifecycleElement> currInitMethods = new ArrayList<>();
+			//当前class的销毁方法集合
 			final List<LifecycleElement> currDestroyMethods = new ArrayList<>();
 
+			/**
+			 * 遍历targetClass中所有访问权限的成员方法，执行回调方法解析
+			 */
 			ReflectionUtils.doWithLocalMethods(targetClass, method -> {
+				/**
+				 * 找出@PostConstruct注解的初始化方法，将其封装并放入currInitMethods集合中
+				 */
 				if (this.initAnnotationType != null && method.isAnnotationPresent(this.initAnnotationType)) {
 					LifecycleElement element = new LifecycleElement(method);
 					currInitMethods.add(element);
@@ -212,6 +242,9 @@ public class InitDestroyAnnotationBeanPostProcessor
 						logger.trace("Found init method on class [" + clazz.getName() + "]: " + method);
 					}
 				}
+				/**
+				 * 找出@PreDestroy注解的销毁方法，将其封装并放入currDestroyMethods集合中
+				 */
 				if (this.destroyAnnotationType != null && method.isAnnotationPresent(this.destroyAnnotationType)) {
 					currDestroyMethods.add(new LifecycleElement(method));
 					if (logger.isTraceEnabled()) {
@@ -220,12 +253,22 @@ public class InitDestroyAnnotationBeanPostProcessor
 				}
 			});
 
+			/**
+			 * 将currInitMethods合并到initMethods集合中
+			 * 将currDestroyMethods合并到destroyMethods集合中
+			 *
+			 * 在获取当前class的父类class
+			 * 如果父类class对象不为空，且不是Object对象，则再次进入循环
+			 */
 			initMethods.addAll(0, currInitMethods);
 			destroyMethods.addAll(currDestroyMethods);
 			targetClass = targetClass.getSuperclass();
 		}
 		while (targetClass != null && targetClass != Object.class);
 
+		/**
+		 * 最后返回class的生命周期方法的元数据封装类LifecycleMetadata
+		 */
 		return new LifecycleMetadata(clazz, initMethods, destroyMethods);
 	}
 
@@ -269,6 +312,9 @@ public class InitDestroyAnnotationBeanPostProcessor
 		}
 
 		public void checkConfigMembers(RootBeanDefinition beanDefinition) {
+			/**
+			 * 将后置处理器扫描获取的@PostConstruct方法，添加到bd的externallyManagedInitMethods外部初始化方法缓存中
+			 */
 			Set<LifecycleElement> checkedInitMethods = new LinkedHashSet<>(this.initMethods.size());
 			for (LifecycleElement element : this.initMethods) {
 				String methodIdentifier = element.getIdentifier();
@@ -280,6 +326,9 @@ public class InitDestroyAnnotationBeanPostProcessor
 					}
 				}
 			}
+			/**
+			 * 将后置处理器扫描获取的@PreDestroy方法，添加到bd的externallyManagedDestroyMethods外部销毁方法缓存中
+			 */
 			Set<LifecycleElement> checkedDestroyMethods = new LinkedHashSet<>(this.destroyMethods.size());
 			for (LifecycleElement element : this.destroyMethods) {
 				String methodIdentifier = element.getIdentifier();

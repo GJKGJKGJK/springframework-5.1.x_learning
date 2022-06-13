@@ -258,6 +258,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		 * 因为这个方法不仅仅在初试化的时候调用，在getBean时也会调用。
 		 * 初试化时的调用肯定为空，但是getBean不一定为空。
 		 *
+		 * 同时属性注入时，也是通过getBean获取对象的，循环依赖场景下在getSingleton方法中获取提前曝光的Bean
+		 *
 		 * 在我们刚开始初始化时，除了BeanPostProcessor、BeanFactoryPostProcessor和Spring内部定义的Bean外,获取的Bean基本上都是空的
 		 * 所以这块代码一般也不会走
 		 */
@@ -425,6 +427,9 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		}
 
 		// Check if required type matches the type of the actual bean instance.
+		/**
+		 * bean的类型检查
+		 */
 		if (requiredType != null && !requiredType.isInstance(bean)) {
 			try {
 				T convertedBean = getTypeConverter().convertIfNecessary(bean, requiredType);

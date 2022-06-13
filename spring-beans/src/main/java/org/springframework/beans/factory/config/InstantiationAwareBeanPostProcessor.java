@@ -23,6 +23,19 @@ import org.springframework.beans.PropertyValues;
 import org.springframework.lang.Nullable;
 
 /**
+ * Spring框架提供的BeanPostProcessor扩展的子接口
+ * InstantiationAwareBeanPostProcessor是对BeanPostProcessor接口的扩展
+ * 在BeanPostProcessor提供抽象方法基础上，还提供了
+ * postProcessBeforeInstantiation、postProcessAfterInstantiation、postProcessPropertiess三个抽象方法
+ *
+ * postProcessBeforeInstantiation可以用来自定义实例化Bean返回，从而跳过由Spring来组织实例化、自动装配属性等操作
+ * postProcessAfterInstantiation可以用来控制Bean是否需要进行自动装配属性操作的
+ * postProcessPropertiess
+ *
+ *
+ *
+ *
+ *
  * Subinterface of {@link BeanPostProcessor} that adds a before-instantiation callback,
  * and a callback after instantiation but before explicit properties are set or
  * autowiring occurs.

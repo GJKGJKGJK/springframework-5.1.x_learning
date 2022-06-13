@@ -133,7 +133,7 @@ class ConstructorResolver {
 		 * explicitArgs参数是在getBean方法中传入的参数
 		 * 如果我们主动调用getBean并且传入explicitArgs参数的话，Spring就会将我们传入的参数作为构造参数
 		 *
-		 * 如果explicitArgs是空的，Spring就尝试会从缓存中获取构造方法和构造参数，在第一次实例化对象，Spring会将构造方法和构造参数存放到缓存中
+		 * 如果explicitArgs是空的，Spring就尝试会从缓存中获取构造方法和构造参数，在第一次实例化对象后，Spring会将构造方法和构造参数存放到缓存中
 		 */
 		if (explicitArgs != null) {
 			argsToUse = explicitArgs;
@@ -246,7 +246,7 @@ class ConstructorResolver {
 			}
 
 			/**
-			 * 对获取到的构造参数进行排序
+			 * 对获取到的构造方法进行排序
 			 * 排序规则：public > protected > default > private,并且同一访问权限的构造方法，参数越多越靠前
 			 * 当找到满足的pulic构造方法时，就不再考虑其他访问权限的构造方法
 			 *
@@ -267,16 +267,17 @@ class ConstructorResolver {
 			 * 计算差异量，确定最合适的构造器
 			 */
 
-			/**
-			 * 遍历所有构造方法，确定constructorToUse和argsToUse。
-			 *
-			 *
-			 */
 			for (Constructor<?> candidate : candidates) {
 				Class<?>[] paramTypes = candidate.getParameterTypes();
 
-				//当constructorToUse不等于空，argsToUse不等于空，且argsToUse长度大于当前构造方法所需参数长度
-				//中断循环，说明找到合适的构造方法
+				/**
+				 * 当constructorToUse不等于空，argsToUse不等于空，且提供的参数argsToUse长度大于当前构造方法所需参数长度时，中断循环
+				 *
+				 * 因为当找到合适的构造方法，且构造方法参数也是满足要求的
+				 * 就不需要在参数数量小于提供参数数量的构造方法范围内查找了
+				 * 直接中断循环，因为构造方法进行了排序，后面遍历的构造方法所需参数肯定都小于提供的参数数量
+				 */
+
 				if (constructorToUse != null && argsToUse != null && argsToUse.length > paramTypes.length) {
 					// Already found greedy constructor that can be satisfied ->
 					// do not look any further, there are only less greedy constructors left.

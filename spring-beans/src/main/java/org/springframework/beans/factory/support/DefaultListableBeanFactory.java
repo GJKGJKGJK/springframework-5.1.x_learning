@@ -903,6 +903,10 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 		}
 
 		// Trigger post-initialization callback for all applicable beans...
+		/**
+		 * 遍历所有的bean，如果有Bean实现了SmartInitializingSingleton接口
+		 * 需要调用重写的afterSingletonsInstantiated方法
+		 */
 		for (String beanName : beanNames) {
 			Object singletonInstance = getSingleton(beanName);
 			if (singletonInstance instanceof SmartInitializingSingleton) {
@@ -1227,6 +1231,9 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			Object result = getAutowireCandidateResolver().getLazyResolutionProxyIfNecessary(
 					descriptor, requestingBeanName);
 			if (result == null) {
+				/**
+				 * 上面都是一些特殊处理，对于我们创建的普通Bean，会直接进入这个else
+				 */
 				result = doResolveDependency(descriptor, requestingBeanName, autowiredBeanNames, typeConverter);
 			}
 			return result;
@@ -1239,12 +1246,20 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 		InjectionPoint previousInjectionPoint = ConstructorResolver.setCurrentInjectionPoint(descriptor);
 		try {
+			/**
+			 * 快捷方式获取字段值
+			 * 目前此方法直接返回的null，所以此段代码跳过
+			 */
 			Object shortcut = descriptor.resolveShortcut(this);
 			if (shortcut != null) {
 				return shortcut;
 			}
 
+			/**
+			 * 获取字段的class类型，后面会根据type获取属性对象
+			 */
 			Class<?> type = descriptor.getDependencyType();
+			//这个地方拿到的是null
 			Object value = getAutowireCandidateResolver().getSuggestedValue(descriptor);
 			if (value != null) {
 				if (value instanceof String) {
@@ -1265,14 +1280,22 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 				}
 			}
 
+			//这个地方拿到的是null
 			Object multipleBeans = resolveMultipleBeans(descriptor, beanName, autowiredBeanNames, typeConverter);
 			if (multipleBeans != null) {
 				return multipleBeans;
 			}
 
+			/**
+			 * 第一次创建Bean的时候会走这边的代码
+			 * 根据需要注入的字段类型找出所有匹配的Beans
+			 */
 			Map<String, Object> matchingBeans = findAutowireCandidates(beanName, type, descriptor);
 			if (matchingBeans.isEmpty()) {
 				if (isRequired(descriptor)) {
+					/**
+					 * 如果没找到匹配字段类型的Bean，则报错
+					 */
 					raiseNoMatchingBeanFound(type, descriptor.getResolvableType(), descriptor);
 				}
 				return null;
@@ -1282,9 +1305,15 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			Object instanceCandidate;
 
 			if (matchingBeans.size() > 1) {
+				/**
+				 * 匹配到多个bean时，根据@Primary注解或者@Priority注解(定义优先级的)找到合适的BeanName
+				 */
 				autowiredBeanName = determineAutowireCandidate(matchingBeans, descriptor);
 				if (autowiredBeanName == null) {
 					if (isRequired(descriptor) || !indicatesMultipleBeans(type)) {
+						/**
+						 * 如果没有使用@Primary注解或者@Priority注解，则匹配到多个当前字段类型的bean时会报错
+						 */
 						return descriptor.resolveNotUnique(descriptor.getResolvableType(), matchingBeans);
 					}
 					else {
@@ -1294,10 +1323,17 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 						return null;
 					}
 				}
+				/**
+				 * 将优先级最高的Bean的class类型拿出来
+				 */
 				instanceCandidate = matchingBeans.get(autowiredBeanName);
 			}
 			else {
 				// We have exactly one match.
+				/**
+				 * 正好找到一个匹配的bean
+				 * 即matchingBeans的数量为1
+				 */
 				Map.Entry<String, Object> entry = matchingBeans.entrySet().iterator().next();
 				autowiredBeanName = entry.getKey();
 				instanceCandidate = entry.getValue();
@@ -1306,6 +1342,12 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			if (autowiredBeanNames != null) {
 				autowiredBeanNames.add(autowiredBeanName);
 			}
+			/**
+			 * 如果instanceCandidate是class类型，即需要注入的是一个class对象
+			 * 则调用BeanFactory的getBean方法获取对象实例
+			 *
+			 * 此处注入的对象未创建，所以需要通过getBean创建并获取对象
+			 */
 			if (instanceCandidate instanceof Class) {
 				instanceCandidate = descriptor.resolveCandidate(autowiredBeanName, type, this);
 			}

@@ -74,13 +74,22 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	private static final int SUPPRESSED_EXCEPTIONS_LIMIT = 100;
 
 
-	/** Cache of singleton objects: bean name to bean instance. */
+	/**
+	 * 一级缓存：用于存放完全初始化好的 bean，从该缓存中取出的 bean 可以直接使用
+	 * Cache of singleton objects: bean name to bean instance.
+	 */
 	private final Map<String, Object> singletonObjects = new ConcurrentHashMap<>(256);
 
-	/** Cache of singleton factories: bean name to ObjectFactory. */
+	/**
+	 * 三级缓存：单例对象工厂的cache，存放 bean 工厂对象，用于解决循环依赖
+	 * Cache of singleton factories: bean name to ObjectFactory.
+	 */
 	private final Map<String, ObjectFactory<?>> singletonFactories = new HashMap<>(16);
 
-	/** Cache of early singleton objects: bean name to bean instance. */
+	/**
+	 * 二级缓存：提前曝光的单例对象的cache，存放原始的 bean 对象（尚未填充属性），用于解决循环依赖
+	 * Cache of early singleton objects: bean name to bean instance.
+	 */
 	private final Map<String, Object> earlySingletonObjects = new ConcurrentHashMap<>(16);
 
 	/** Set of registered singletons, containing the bean names in registration order. */
@@ -154,6 +163,10 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	protected void addSingletonFactory(String beanName, ObjectFactory<?> singletonFactory) {
 		Assert.notNull(singletonFactory, "Singleton factory must not be null");
 		synchronized (this.singletonObjects) {
+			/**
+			 * 第一次创建Bean时singletonObjects缓存中还没有这个bean
+			 * 所以此时会在三级缓存中添加beanName及对应的对象工厂
+			 */
 			if (!this.singletonObjects.containsKey(beanName)) {
 				this.singletonFactories.put(beanName, singletonFactory);
 				this.earlySingletonObjects.remove(beanName);
@@ -189,6 +202,8 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		 * Spring是在一系列的检查后，直到执行到下面的getSingleton的beforeSingletonCreation代码时，才认为当前BeanName才是正在创建的Bean
 		 * @see org.springframework.beans.factory.support.DefaultSingletonBeanRegistry#beforeSingletonCreation(String)
 		 *
+		 * 在循环依赖场景下，isSingletonCurrentlyInCreation()方法方法可能返回true,用来在三级缓存中获取对象工厂
+		 * 再通过对象工厂获取提前曝光的Bean，进行属性注入
 		 *
 		 * 由此可见当前这个getSingleton方法的作用是：
 		 * 当我们在程序中通过BeanFactory.getBean()时，获取对象
@@ -203,10 +218,26 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					if (singletonObject == null) {
 						singletonObject = this.earlySingletonObjects.get(beanName);
 						if (singletonObject == null) {
+							/**
+							 * 获取对象工厂
+							 */
 							ObjectFactory<?> singletonFactory = this.singletonFactories.get(beanName);
 							if (singletonFactory != null) {
+								/**
+								 * 获取提前曝光的Bean
+								 */
 								singletonObject = singletonFactory.getObject();
+								/**
+								 * 向二级缓存中插入这个提前曝光的Bean
+								 * 在其他类与类循环依赖场景下，可以从二级缓存中获取提前曝光的Bean
+								 * 确保单例原则
+								 */
 								this.earlySingletonObjects.put(beanName, singletonObject);
+								/**
+								 * 已使用过的对象工厂需要删除
+								 * 如果需要获取提前曝光的bean，可以从二级缓存汇中获取
+								 * 确保单例原则
+								 */
 								this.singletonFactories.remove(beanName);
 							}
 						}
@@ -251,6 +282,8 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 				/**
 				 * 到此，Spring认为当前的Bean可以开始创建了，然后将当前beanName设置到singletonsCurrentlyInCreation(当前正在创建的单例Bean的beanName集合)
 				 * 表示当前beanName对应的bean正在创建中
+				 *
+				 * 在循环依赖时会用到此处存放在singletonsCurrentlyInCreation集合中的BeanName
 				 */
 				beforeSingletonCreation(beanName);
 
@@ -292,9 +325,18 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					if (recordSuppressedExceptions) {
 						this.suppressedExceptions = null;
 					}
+					/**
+					 * 在单例Bean创建完成后，从singletonsCurrentlyInCreation集合中删除当前的Bean
+					 */
 					afterSingletonCreation(beanName);
 				}
 				if (newSingleton) {
+					/**
+					 * 向一级缓存singletonObjects中添加当前这个单例bean
+					 * 从二级缓存earlySinglenObject中删除当前bean对应的不完整bean记录
+					 * 从三级缓存singletFactories中删除当前bean对应的对象工厂记录（在循环依赖场景下，执行getSingleton方法获取字段值时就会删除）
+					 * 向registeredSingletons集合中添加当前BeanName
+					 */
 					addSingleton(beanName, singletonObject);
 				}
 			}

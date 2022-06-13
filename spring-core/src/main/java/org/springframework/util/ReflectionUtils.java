@@ -364,6 +364,10 @@ public abstract class ReflectionUtils {
 	 * @see #doWithMethods
 	 */
 	public static void doWithLocalMethods(Class<?> clazz, MethodCallback mc) {
+		/**
+		 * 获取所有访问权限的成员方法
+		 * 遍历进行回调，还得看MethodCallback回调参数中的处理
+		 */
 		Method[] methods = getDeclaredMethods(clazz);
 		for (Method method : methods) {
 			try {
@@ -689,6 +693,9 @@ public abstract class ReflectionUtils {
 	 * @see #doWithFields
 	 */
 	public static void doWithLocalFields(Class<?> clazz, FieldCallback fc) {
+		/**
+		 * 获取所有访问权限的成员变量，并循环执行回调方法，重点关注FieldCallback参数
+		 */
 		for (Field field : getDeclaredFields(clazz)) {
 			try {
 				fc.doWith(field);

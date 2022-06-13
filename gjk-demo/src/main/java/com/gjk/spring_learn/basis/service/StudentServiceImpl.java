@@ -16,10 +16,6 @@ import com.gjk.spring_learn.basis.dao.StudentDaoImpl;
 @Service
 public class StudentServiceImpl implements IStudentService{
 
-	public StudentServiceImpl(String str) {
-
-	}
-
 
 	@Autowired
 	private StudentDaoImpl studentDao;
