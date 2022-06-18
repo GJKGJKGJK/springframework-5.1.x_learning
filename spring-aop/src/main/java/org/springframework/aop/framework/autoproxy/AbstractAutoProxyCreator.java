@@ -249,6 +249,14 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 				return null;
 			}
 			if (isInfrastructureClass(beanClass) || shouldSkip(beanClass, beanName)) {
+				/**
+				 * 如果当前Bean中使用了包含@Advice、@Pointcut、@Advisor、@AopInfrastructureBean注解，
+				 * 代表这些类不需要增强，然后将beanName-是否增强键值对放入缓存中
+				 *
+				 * 此处只是过滤出含有@Advice、@Pointcut、@Advisor、@AopInfrastructureBean注解的类
+				 * 找出确定不需要创建代理对象的Bean,对于不确定的暂不处理
+				 * 在创建代理对象时，可以更快速的过滤不需要创建代理对象的类
+				 */
 				this.advisedBeans.put(cacheKey, Boolean.FALSE);
 				return null;
 			}

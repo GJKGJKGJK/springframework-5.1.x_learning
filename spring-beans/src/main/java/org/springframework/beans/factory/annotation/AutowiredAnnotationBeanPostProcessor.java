@@ -660,6 +660,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 				ReflectionUtils.makeAccessible(field);
 				/**
 				 * 给字段设置值
+				 * 第二种属性注入方式：使用@Autowired注解的字段通过 反射 实现
 				 */
 				field.set(bean, value);
 			}
@@ -747,6 +748,9 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 			}
 			if (arguments != null) {
 				try {
+					/**
+					 * 第三种属性注入方式：通过使用@AutoWired注解的方法，即set方法实现
+					 */
 					ReflectionUtils.makeAccessible(method);
 					method.invoke(bean, arguments);
 				}

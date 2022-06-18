@@ -1,5 +1,6 @@
 package com.gjk.spring_learn;
 
+import org.aspectj.lang.annotation.Aspect;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
@@ -17,6 +18,7 @@ import com.gjk.spring_learn.basis.test.RunTest;
  * @description:
  */
 @ComponentScan("com.gjk.spring_learn")
+@Aspect
 public class sumTest {
 
 	public static void main(String[] args) {

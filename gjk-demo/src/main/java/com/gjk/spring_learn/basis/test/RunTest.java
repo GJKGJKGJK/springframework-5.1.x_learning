@@ -17,6 +17,7 @@ import com.gjk.spring_learn.basis.importAware.ImportArgs;
 import com.gjk.spring_learn.basis.importAware.MyImportAware;
 import com.gjk.spring_learn.basis.mergedLocalBeanDefinition.Child;
 import com.gjk.spring_learn.basis.mergedLocalBeanDefinition.Parent;
+import com.gjk.spring_learn.basis.service.IStudentService;
 import com.gjk.spring_learn.basis.service.StudentServiceImpl;
 
 /**
@@ -29,6 +30,7 @@ import com.gjk.spring_learn.basis.service.StudentServiceImpl;
 @ComponentScan("com.gjk.spring_learn.basis")
 //@ImportArgs(name = "GJK",age = 24)
 //@ImportResource("classpath:Spring.xml")
+@EnableAspectJAutoProxy
 public class RunTest {
 
 	public static void main(String[] args) {
@@ -43,6 +45,8 @@ public class RunTest {
 //		context.addBeanFactoryPostProcessor(new MyBeanFactoryPostProcessor2());
 //		context.addBeanFactoryPostProcessor(new MyBeanFactoryPostProcessor3());
 		context.refresh();
+		IStudentService service = context.getBean(IStudentService.class);
+		service.goSchool();
 
 		/**
 		 * 测试通过ImportAware接口+注解给属性设置值

@@ -391,7 +391,9 @@ class ConstructorResolver {
 
 		Assert.state(argsToUse != null, "Unresolved constructor arguments");
 		/**
-		 * 最终找到合适的构造方法，通过反射创建对象
+		 * 最终找到合适的构造方法，通过反射执行构造方法创建对象
+		 *
+		 * 第一种属性注入方式：构造方法
 		 */
 		bw.setBeanInstance(instantiate(beanName, mbd, constructorToUse, argsToUse));
 		return bw;
