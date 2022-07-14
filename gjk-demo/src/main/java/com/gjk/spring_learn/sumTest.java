@@ -1,14 +1,11 @@
 package com.gjk.spring_learn;
 
-import org.aspectj.lang.annotation.Aspect;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
 import com.gjk.spring_learn.basis.beanDefinitionRegistryPostProcessor.MyBDRegistryPostProcessor2;
 import com.gjk.spring_learn.basis.beanFactoryPostProcessors.MyBeanFactoryPostProcessor2;
 import com.gjk.spring_learn.basis.beanFactoryPostProcessors.MyBeanFactoryPostProcessor3;
-import com.gjk.spring_learn.basis.service.StudentServiceImpl;
-import com.gjk.spring_learn.basis.test.RunTest;
 
 /**
  * sumTest
@@ -18,7 +15,6 @@ import com.gjk.spring_learn.basis.test.RunTest;
  * @description:
  */
 @ComponentScan("com.gjk.spring_learn")
-@Aspect
 public class sumTest {
 
 	public static void main(String[] args) {
@@ -32,6 +28,7 @@ public class sumTest {
 		context.addBeanFactoryPostProcessor(new MyBeanFactoryPostProcessor3());
 
 		context.refresh();
+
 
 	}
 }
